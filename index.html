@@ -19,8 +19,8 @@
                         sans: ['Cairo', 'sans-serif'],
                     },
                     colors: {
-                        primary: '#FBB03B', /* Yellow/Gold from the PDF */
-                        secondary: '#1A1A1A', /* Dark/Black theme */
+                        primary: '#FBB03B', /* Yellow/Gold theme */
+                        secondary: '#1A1A1A', /* Dark theme */
                         darkGray: '#333333',
                         lightGray: '#F5F5F5'
                     }
@@ -39,8 +39,8 @@
             background-position: center;
             background-attachment: fixed;
         }
-        .service-card:hover {
-            transform: translateY(-10px);
+        .service-card:hover, .equipment-card:hover {
+            transform: translateY(-6px);
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
         
@@ -68,6 +68,10 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #e59a2a; 
         }
+
+        .view-section {
+            transition: opacity 0.3s ease-in-out;
+        }
     </style>
 </head>
 <body class="bg-white text-gray-800 antialiased selection:bg-primary selection:text-secondary">
@@ -75,7 +79,7 @@
     <header class="fixed w-full top-0 z-50 bg-secondary text-white shadow-lg transition-all duration-300" id="navbar">
         <div class="container mx-auto px-6 py-4 flex justify-between items-center">
             <!-- Logo -->
-            <a href="#" class="flex items-center gap-3">
+            <a href="javascript:void(0)" onclick="navigateTo('home')" class="flex items-center gap-3">
                 <div class="w-12 h-12 bg-transparent rounded-lg flex items-center justify-center p-0.5">
                     <img src="https://i.postimg.cc/brYG8n44/canara-logo.png" alt="شعار شركة كنارة العربية" class="w-full h-full object-contain filter drop-shadow" onerror="this.src='https://placehold.co/100x100/1A1A1A/FBB03B?text=C'">
                 </div>
@@ -88,19 +92,28 @@
             <!-- Desktop Menu & Lang Switcher -->
             <div class="hidden md:flex items-center gap-8">
                 <nav class="flex gap-8 font-semibold">
-                    <a href="#about" class="hover:text-primary transition-colors" data-i18n="nav_about">عن كنارة</a>
-                    <a href="#vision" class="hover:text-primary transition-colors" data-i18n="nav_vision">رؤيتنا ورسالتنا</a>
-                    <a href="#services" class="hover:text-primary transition-colors" data-i18n="nav_services">خدماتنا</a>
-                    <a href="#suppliers" class="hover:text-primary transition-colors" data-i18n="nav_suppliers">الموردين</a>
-                    <a href="#contact" class="hover:text-primary transition-colors" data-i18n="nav_contact">تواصل معنا</a>
+                    <a href="javascript:void(0)" onclick="navigateTo('home', 'about')" class="hover:text-primary transition-colors" data-i18n="nav_about">عن كنارة</a>
+                    <a href="javascript:void(0)" onclick="navigateTo('home', 'vision')" class="hover:text-primary transition-colors" data-i18n="nav_vision">رؤيتنا ورسالتنا</a>
+                    <a href="javascript:void(0)" onclick="navigateTo('home', 'services')" class="hover:text-primary transition-colors" data-i18n="nav_services">خدماتنا</a>
+                    <a href="javascript:void(0)" onclick="navigateTo('products')" class="hover:text-primary text-primary transition-colors flex items-center gap-1 font-bold" data-i18n="nav_products"><i class="fas fa-boxes text-xs"></i> المنتجات والمعدات</a>
+                    <a href="javascript:void(0)" onclick="navigateTo('home', 'suppliers')" class="hover:text-primary transition-colors" data-i18n="nav_suppliers">الموردين</a>
+                    <a href="javascript:void(0)" onclick="navigateTo('home', 'contact')" class="hover:text-primary transition-colors" data-i18n="nav_contact">تواصل معنا</a>
                 </nav>
+                
+                <button onclick="openAdminLoginModal()" class="bg-gray-800 border border-primary/40 text-primary hover:bg-primary hover:text-secondary px-3 py-1.5 rounded-md font-bold text-xs transition-all flex items-center gap-1.5 shadow" title="دخول لوحة إدارة المنتجات">
+                    <i class="fas fa-user-shield"></i> <span data-i18n="nav_admin">لوحة الإدارة</span>
+                </button>
+
                 <button onclick="toggleLanguage()" class="bg-primary text-secondary px-3 py-1.5 rounded-md font-bold text-sm hover:bg-yellow-500 transition-colors flex items-center gap-1.5 shadow">
                     <i class="fas fa-globe"></i> <span id="langBtnText">EN</span>
                 </button>
             </div>
 
             <!-- Mobile Menu Controls -->
-            <div class="flex items-center gap-4 md:hidden">
+            <div class="flex items-center gap-3 md:hidden">
+                <button onclick="openAdminLoginModal()" class="bg-gray-800 border border-primary/40 text-primary px-2 py-1 rounded font-bold text-xs flex items-center gap-1">
+                    <i class="fas fa-user-shield"></i>
+                </button>
                 <button onclick="toggleLanguage()" class="bg-primary text-secondary px-2.5 py-1 rounded font-bold text-xs flex items-center gap-1 shadow">
                     <i class="fas fa-globe"></i> <span id="langBtnTextMobile">EN</span>
                 </button>
@@ -110,267 +123,603 @@
             </div>
         </div>
         
-        <!-- Mobile Menu (Hidden by default) -->
+        <!-- Mobile Menu -->
         <div id="mobileMenu" class="hidden md:hidden bg-darkGray absolute w-full left-0 border-t border-gray-700">
             <div class="flex flex-col px-6 py-4 gap-4 font-semibold text-center">
-                <a href="#about" class="hover:text-primary transition-colors" onclick="toggleMenu()" data-i18n="nav_about">عن كنارة</a>
-                <a href="#vision" class="hover:text-primary transition-colors" onclick="toggleMenu()" data-i18n="nav_vision">رؤيتنا ورسالتنا</a>
-                <a href="#services" class="hover:text-primary transition-colors" onclick="toggleMenu()" data-i18n="nav_services">خدماتنا</a>
-                <a href="#suppliers" class="hover:text-primary transition-colors" onclick="toggleMenu()" data-i18n="nav_suppliers">الموردين</a>
-                <a href="#contact" class="hover:text-primary transition-colors" onclick="toggleMenu()" data-i18n="nav_contact">تواصل معنا</a>
+                <a href="javascript:void(0)" onclick="navigateTo('home', 'about'); toggleMenu();" class="hover:text-primary transition-colors" data-i18n="nav_about">عن كنارة</a>
+                <a href="javascript:void(0)" onclick="navigateTo('home', 'vision'); toggleMenu();" class="hover:text-primary transition-colors" data-i18n="nav_vision">رؤيتنا ورسالتنا</a>
+                <a href="javascript:void(0)" onclick="navigateTo('home', 'services'); toggleMenu();" class="hover:text-primary transition-colors" data-i18n="nav_services">خدماتنا</a>
+                <a href="javascript:void(0)" onclick="navigateTo('products'); toggleMenu();" class="hover:text-primary text-primary font-bold transition-colors" data-i18n="nav_products">المنتجات والمعدات</a>
+                <a href="javascript:void(0)" onclick="navigateTo('home', 'suppliers'); toggleMenu();" class="hover:text-primary transition-colors" data-i18n="nav_suppliers">الموردين</a>
+                <a href="javascript:void(0)" onclick="navigateTo('home', 'contact'); toggleMenu();" class="hover:text-primary transition-colors" data-i18n="nav_contact">تواصل معنا</a>
             </div>
         </div>
     </header>
 
-    <section class="hero-bg h-screen flex items-center pt-20" id="home">
-        <div class="container mx-auto px-6 text-center">
-            <h2 class="text-primary text-2xl md:text-4xl font-bold mb-4 drop-shadow-md" data-i18n="hero_title">شركة كنارة العربية</h2>
-            <h1 class="text-white text-5xl md:text-7xl font-extrabold mb-8 leading-tight drop-shadow-lg" data-i18n="hero_subtitle">
-                نشارك عملائنا <br> <span class="text-primary">تحقيق إنجازاتهم</span>
-            </h1>
-            <p class="text-gray-300 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed" data-i18n="hero_desc">
-                الوجهة الأولى والاختيار الأمثل في مجال توفير قطع غيار المعدات الثقيلة والخدمات المرتبطة بها في المنطقة.
-            </p>
-            <a href="#about" class="bg-primary text-secondary px-8 py-3 rounded-full font-bold text-lg hover:bg-yellow-500 transition-colors inline-block shadow-lg">
-                <span data-i18n="hero_btn">اكتشف المزيد</span> <i class="fas fa-arrow-down mr-2 ltr:ml-2 ltr:mr-0"></i>
-            </a>
-        </div>
-    </section>
-
-    <section class="py-20 bg-white" id="about">
-        <div class="container mx-auto px-6 flex flex-col md:flex-row items-center gap-12">
-            <div class="md:w-1/2">
-                <div class="inline-block px-3 py-1 bg-primary text-secondary font-bold rounded-full mb-4 text-sm" data-i18n="about_badge">نبذة عنا</div>
-                <h2 class="text-4xl font-bold text-secondary mb-6 relative pb-4" data-i18n="about_title">
-                    عن كنارة العربية
-                    <span class="absolute bottom-0 right-0 ltr:right-auto ltr:left-0 w-20 h-1 bg-primary"></span>
-                </h2>
-                <p class="text-gray-600 mb-6 leading-loose text-lg text-justify" data-i18n="about_p1">
-                    في عام ٢٠١٢، ولدت شركتنا في قلب المملكة العربية السعودية بالرياض، حاملة لشعلة شغف لا تنطفئ بأن تصبح الوجهة الأولى والاختيار الأمثل في مجال توفير قطع غيار المعدات الثقيلة والخدمات المرتبطة بها في المنطقة. حيث تمكننا بفضل سعينا الحثيث لبناء شبكة قوية تضم أفضل الموردين المحليين والدوليين من تقديم أفضل الخدمات والحلول لعملائنا بأعلى معايير الجودة والموثوقية.
+    <!-- MAIN HOME VIEW CONTAINER -->
+    <div id="home-view" class="view-section">
+        <section class="hero-bg h-screen flex items-center pt-20" id="home">
+            <div class="container mx-auto px-6 text-center">
+                <h2 class="text-primary text-2xl md:text-4xl font-bold mb-4 drop-shadow-md" data-i18n="hero_title">شركة كنارة العربية</h2>
+                <h1 class="text-white text-5xl md:text-7xl font-extrabold mb-8 leading-tight drop-shadow-lg" data-i18n="hero_subtitle">
+                    نشارك عملائنا <br> <span class="text-primary">تحقيق إنجازاتهم</span>
+                </h1>
+                <p class="text-gray-300 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed" data-i18n="hero_desc">
+                    الوجهة الأولى والاختيار الأمثل في مجال توفير قطع غيار المعدات الثقيلة والخدمات المرتبطة بها في المنطقة.
                 </p>
-                <p class="text-gray-600 leading-loose text-lg text-justify border-r-4 ltr:border-r-0 ltr:border-l-4 border-primary pr-4 ltr:pr-0 ltr:pl-4" data-i18n="about_p2">
-                    بفضل فريقنا المتخصص وخبراتنا العميقة، نحرص على أن نقدم لعملائنا تجربة فريدة تضمن لهم راحة البال واستمرارية أعمالهم دون أي انقطاع من خلال توفير قطع الغيار المختلفة بسرعة ودقة حسب المواصفات المطلوبة وبأسعار تنافسية.
-                </p>
-            </div>
-            <div class="md:w-1/2 relative">
-                <div class="absolute inset-0 bg-primary transform translate-x-4 translate-y-4 ltr:-translate-x-4 rounded-xl -z-10"></div>
-                <img src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80&w=1000" alt="مستودع قطع غيار" class="rounded-xl shadow-2xl w-full object-cover h-[450px]">
-            </div>
-        </div>
-    </section>
-
-    <section class="py-20 bg-lightGray" id="vision">
-        <div class="container mx-auto px-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-10 mb-16">
-                <!-- Vision -->
-                <div class="bg-white p-10 rounded-2xl shadow-lg border-t-4 border-primary">
-                    <div class="w-16 h-16 bg-primary text-secondary rounded-full flex items-center justify-center text-3xl mb-6 shadow-md">
-                        <i class="fas fa-eye"></i>
-                    </div>
-                    <h3 class="text-3xl font-bold mb-4 text-secondary" data-i18n="vision_title">رؤيتنا</h3>
-                    <p class="text-gray-600 leading-loose text-lg text-justify" data-i18n="vision_desc">
-                        النهوض بقطاع المعدات الثقيلة ورفع كفاءته عن طريق توفير قطع الغيار اللازمة لمختلف المعدات وتوفير خدمة عملاء وخدمات صيانة على مدار الاسبوع بدقة الاحترافية تتخطى توقعات العملاء.
-                    </p>
-                </div>
-                
-                <!-- Mission -->
-                <div class="bg-white p-10 rounded-2xl shadow-lg border-t-4 border-secondary">
-                    <div class="w-16 h-16 bg-secondary text-primary rounded-full flex items-center justify-center text-3xl mb-6 shadow-md">
-                        <i class="fas fa-bullseye"></i>
-                    </div>
-                    <h3 class="text-3xl font-bold mb-4 text-secondary" data-i18n="mission_title">رسالتنا</h3>
-                    <p class="text-gray-600 leading-loose text-lg text-justify" data-i18n="mission_desc">
-                        نسعى لبناء علاقات طويلة الأمد مع عملائنا من خلال تقديم خدمات موثوقة ومخصصة تلبي احتياجاتهم وتساهم في تحقيق رؤية المملكة ٢٠٣٠.
-                    </p>
+                <div class="flex justify-center gap-4 flex-wrap">
+                    <button onclick="navigateTo('products')" class="bg-primary text-secondary px-8 py-3 rounded-full font-bold text-lg hover:bg-yellow-500 transition-colors inline-block shadow-lg">
+                        <span data-i18n="btn_explore_catalog">تصفح كتالوج المعدات وقطع الغيار</span> <i class="fas fa-boxes mr-2 ltr:ml-2 ltr:mr-0"></i>
+                    </button>
+                    <a href="#about" class="bg-gray-800 text-white border border-gray-600 px-6 py-3 rounded-full font-bold text-lg hover:bg-gray-700 transition-colors inline-block shadow-lg">
+                        <span data-i18n="hero_btn">عن الشركة</span> <i class="fas fa-arrow-down mr-2 ltr:ml-2 ltr:mr-0"></i>
+                    </a>
                 </div>
             </div>
+        </section>
 
-            <!-- Values -->
-            <div class="mt-12">
-                <div class="text-center mb-12">
-                    <h2 class="text-4xl font-bold text-secondary inline-block relative pb-2" data-i18n="values_title">
-                        قـيـمـنـا
-                        <span class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-primary"></span>
+        <section class="py-20 bg-white" id="about">
+            <div class="container mx-auto px-6 flex flex-col md:flex-row items-center gap-12">
+                <div class="md:w-1/2">
+                    <div class="inline-block px-3 py-1 bg-primary text-secondary font-bold rounded-full mb-4 text-sm" data-i18n="about_badge">نبذة عنا</div>
+                    <h2 class="text-4xl font-bold text-secondary mb-6 relative pb-4" data-i18n="about_title">
+                        عن كنارة العربية
+                        <span class="absolute bottom-0 right-0 ltr:right-auto ltr:left-0 w-20 h-1 bg-primary"></span>
                     </h2>
+                    <p class="text-gray-600 mb-6 leading-loose text-lg text-justify" data-i18n="about_p1">
+                        في عام ٢٠١٢، ولدت شركتنا في قلب المملكة العربية السعودية بالرياض، حاملة لشعلة شغف لا تنطفئ بأن تصبح الوجهة الأولى والاختيار الأمثل في مجال توفير قطع غيار المعدات الثقيلة والخدمات المرتبطة بها في المنطقة. حيث تمكننا بفضل سعينا الحثيث لبناء شبكة قوية تضم أفضل الموردين المحليين والدوليين من تقديم أفضل الخدمات والحلول لعملائنا بأعلى معايير الجودة والموثوقية.
+                    </p>
+                    <p class="text-gray-600 leading-loose text-lg text-justify border-r-4 ltr:border-r-0 ltr:border-l-4 border-primary pr-4 ltr:pr-0 ltr:pl-4" data-i18n="about_p2">
+                        بفضل فريقنا المتخصص وخبراتنا العميقة، نحرص على أن نقدم لعملائنا تجربة فريدة تضمن لهم راحة البال واستمرارية أعمالهم دون أي انقطاع من خلال توفير قطع الغيار المختلفة بسرعة ودقة حسب المواصفات المطلوبة وبأسعار تنافسية.
+                    </p>
+                </div>
+                <div class="md:w-1/2 relative">
+                    <div class="absolute inset-0 bg-primary transform translate-x-4 translate-y-4 ltr:-translate-x-4 rounded-xl -z-10"></div>
+                    <img src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80&w=1000" alt="مستودع قطع غيار" class="rounded-xl shadow-2xl w-full object-cover h-[450px]">
+                </div>
+            </div>
+        </section>
+
+        <!-- Vision & Mission -->
+        <section class="py-20 bg-lightGray" id="vision">
+            <div class="container mx-auto px-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-10 mb-16">
+                    <div class="bg-white p-10 rounded-2xl shadow-lg border-t-4 border-primary">
+                        <div class="w-16 h-16 bg-primary text-secondary rounded-full flex items-center justify-center text-3xl mb-6 shadow-md">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <h3 class="text-3xl font-bold mb-4 text-secondary" data-i18n="vision_title">رؤيتنا</h3>
+                        <p class="text-gray-600 leading-loose text-lg text-justify" data-i18n="vision_desc">
+                            النهوض بقطاع المعدات الثقيلة ورفع كفاءته عن طريق توفير قطع الغيار اللازمة لمختلف المعدات وتوفير خدمة عملاء وخدمات صيانة على مدار الاسبوع بدقة الاحترافية تتخطى توقعات العملاء.
+                        </p>
+                    </div>
+                    
+                    <div class="bg-white p-10 rounded-2xl shadow-lg border-t-4 border-secondary">
+                        <div class="w-16 h-16 bg-secondary text-primary rounded-full flex items-center justify-center text-3xl mb-6 shadow-md">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <h3 class="text-3xl font-bold mb-4 text-secondary" data-i18n="mission_title">رسالتنا</h3>
+                        <p class="text-gray-600 leading-loose text-lg text-justify" data-i18n="mission_desc">
+                            نسعى لبناء علاقات طويلة الأمد مع عملائنا من خلال تقديم خدمات موثوقة ومخصصة تلبي احتياجاتهم وتساهم في تحقيق رؤية المملكة ٢٠٣٠.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Values -->
+                <div class="mt-12">
+                    <div class="text-center mb-12">
+                        <h2 class="text-4xl font-bold text-secondary inline-block relative pb-2" data-i18n="values_title">
+                            قـيـمـنـا
+                            <span class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-primary"></span>
+                        </h2>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                        <div class="bg-white p-6 rounded-xl shadow text-center hover:bg-primary hover:text-secondary transition-all group">
+                            <div class="text-4xl text-primary group-hover:text-secondary mb-4 opacity-30 font-extrabold">01</div>
+                            <h4 class="font-bold text-xl mb-3" data-i18n="val1_title">الجودة والتميز</h4>
+                            <p class="text-sm text-gray-600 group-hover:text-secondary font-medium" data-i18n="val1_desc">تقديم أعلى مستويات الجودة لضمان رضا عملائنا واستمرارية أعمالهم.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow text-center hover:bg-primary hover:text-secondary transition-all group">
+                            <div class="text-4xl text-primary group-hover:text-secondary mb-4 opacity-30 font-extrabold">02</div>
+                            <h4 class="font-bold text-xl mb-3" data-i18n="val2_title">الابتكار</h4>
+                            <p class="text-sm text-gray-600 group-hover:text-secondary font-medium" data-i18n="val2_desc">تقديم حلول متطورة تلبي احتياجات السوق وتتخطى التوقعات.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow text-center hover:bg-primary hover:text-secondary transition-all group">
+                            <div class="text-4xl text-primary group-hover:text-secondary mb-4 opacity-30 font-extrabold">03</div>
+                            <h4 class="font-bold text-xl mb-3" data-i18n="val3_title">الثقة والشفافية</h4>
+                            <p class="text-sm text-gray-600 group-hover:text-secondary font-medium" data-i18n="val3_desc">بناء علاقات قائمة على الثقة المتبادلة بالتعامل بشفافية وأمانة.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow text-center hover:bg-primary hover:text-secondary transition-all group">
+                            <div class="text-4xl text-primary group-hover:text-secondary mb-4 opacity-30 font-extrabold">04</div>
+                            <h4 class="font-bold text-xl mb-3" data-i18n="val4_title">الشراكات القوية</h4>
+                            <p class="text-sm text-gray-600 group-hover:text-secondary font-medium" data-i18n="val4_desc">تعزيز التعاون المثمر مع موردينا وعملائنا لإيماننا بأن النجاح يبنى معاً.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow text-center hover:bg-primary hover:text-secondary transition-all group">
+                            <div class="text-4xl text-primary group-hover:text-secondary mb-4 opacity-30 font-extrabold">05</div>
+                            <h4 class="font-bold text-xl mb-3" data-i18n="val5_title">التفاني والالتزام</h4>
+                            <p class="text-sm text-gray-600 group-hover:text-secondary font-medium" data-i18n="val5_desc">الالتزام بتقديم أفضل الخدمات والتركيز على تلبية احتياجات العملاء بسرعة.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Services -->
+        <section class="py-20 bg-white" id="services">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-16">
+                    <div class="inline-block px-3 py-1 bg-primary text-secondary font-bold rounded-full mb-4 text-sm" data-i18n="services_badge">ما نقدمه لعملائنا</div>
+                    <h2 class="text-4xl font-bold text-secondary mb-4" data-i18n="services_title">خـدمـاتـنـا</h2>
+                    <p class="text-gray-600 max-w-2xl mx-auto text-lg" data-i18n="services_subtitle">
+                        تقدم شركة كنارة العربية مجموعة متنوعة من الخدمات المتكاملة لتلبية احتياجات عملائنا في قطاع المعدات الثقيلة.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="service-card bg-gray-50 p-8 rounded-2xl border border-gray-100 transition-all duration-300">
+                        <div class="w-14 h-14 bg-primary/20 text-primary rounded-xl flex items-center justify-center text-2xl mb-6">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-secondary mb-4" data-i18n="srv1_title">توفير قطع غيار المعدات</h3>
+                        <p class="text-gray-600 leading-relaxed" data-i18n="srv1_desc">نتخصص في توفير قطع غيار عالية الجودة لكافة أنواع المعدات الثقيلة، حيث نحرص على توفير مجموعة واسعة من القطع من موردينا في إيطاليا وأمريكا وغيرها للحفاظ على أداء المعدات بكفاءة.</p>
+                    </div>
+
+                    <div class="service-card bg-gray-50 p-8 rounded-2xl border border-gray-100 transition-all duration-300">
+                        <div class="w-14 h-14 bg-primary/20 text-primary rounded-xl flex items-center justify-center text-2xl mb-6">
+                            <i class="fas fa-headset"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-secondary mb-4" data-i18n="srv2_title">مركز استقبال العملاء</h3>
+                        <p class="text-gray-600 leading-relaxed" data-i18n="srv2_desc">تمتلك شركتنا مركز استقبال عملاء مصمم لتسجيل طلبات وملاحظات ومقترحات العملاء وتوجيهها للوحدات المختصة. فريقنا المدرب يقدم الدعم لضمان تلبية جميع الاحتياجات بفعالية.</p>
+                    </div>
+
+                    <div class="service-card bg-gray-50 p-8 rounded-2xl border border-gray-100 transition-all duration-300">
+                        <div class="w-14 h-14 bg-primary/20 text-primary rounded-xl flex items-center justify-center text-2xl mb-6">
+                            <i class="fas fa-box-open"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-secondary mb-4" data-i18n="srv3_title">تجهيز القطع غير المتوفرة</h3>
+                        <p class="text-gray-600 leading-relaxed" data-i18n="srv3_desc">في حالة عدم توفر القطع المطلوبة في مخازننا، نقدم خدمة تجهيزها خصيصاً لكم. نعمل بشكل وثيق مع شبكة موردينا لضمان توفيرها في أسرع وقت ممكن لتقليل أوقات الانتظار.</p>
+                    </div>
+
+                    <div class="service-card bg-gray-50 p-8 rounded-2xl border border-gray-100 transition-all duration-300">
+                        <div class="w-14 h-14 bg-primary/20 text-primary rounded-xl flex items-center justify-center text-2xl mb-6">
+                            <i class="fas fa-shipping-fast"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-secondary mb-4" data-i18n="srv4_title">خدمات الشحن</h3>
+                        <p class="text-gray-600 leading-relaxed" data-i18n="srv4_desc">نقدم حلول شحن متكاملة وسريعة إلى مختلف مدن المملكة تضمن وصول المنتجات بأمان وفي الوقت المحدد باستخدام أحدث وسائل النقل وتتبع الشحنات.</p>
+                    </div>
+
+                    <div class="service-card bg-gray-50 p-8 rounded-2xl border border-gray-100 transition-all duration-300">
+                        <div class="w-14 h-14 bg-primary/20 text-primary rounded-xl flex items-center justify-center text-2xl mb-6">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-secondary mb-4" data-i18n="srv5_title">خدمة العملاء ومتابعة ما بعد البيع</h3>
+                        <p class="text-gray-600 leading-relaxed" data-i18n="srv5_desc">نحرص على تقديم دعم مستمر لعملائنا، بدءاً من استفسارات العملاء الأولية وحتى متابعة ما بعد البيع. يتولى فريق خدمة العملاء الإجابة على الأسئلة وحل المشاكل لضمان تجربة سلسة.</p>
+                    </div>
+
+                    <div class="service-card bg-gradient-to-br from-secondary to-darkGray p-8 rounded-2xl text-white flex flex-col justify-between shadow-xl">
+                        <div>
+                            <span class="bg-primary text-secondary text-xs font-bold px-3 py-1 rounded-full uppercase mb-4 inline-block">صفحة خاصة</span>
+                            <h3 class="text-2xl font-bold mb-3 text-primary">تصفح كتالوج المنتجات والمعدات</h3>
+                            <p class="text-gray-300 text-sm leading-relaxed mb-6">اكتشف تشكيلة الآليات والمعدات الثقيلة المدعومة لدينا وقم بالبحث المباشر عن قطع الغيار باستخدام الفلاتر الذكية.</p>
+                        </div>
+                        <button onclick="navigateTo('products')" class="bg-primary text-secondary px-6 py-3 rounded-lg font-bold text-center hover:bg-yellow-500 transition-colors w-full">
+                            الانتقال لصفحة المنتجات <i class="fas fa-arrow-left ltr:rotate-180 mr-2"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Suppliers Section on Home -->
+        <section class="py-16 bg-gray-900 text-white" id="suppliers">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl font-bold text-primary mb-2" data-i18n="suppliers_title">شركاؤنا وموردونا</h2>
+                    <p class="text-gray-400" data-i18n="suppliers_subtitle">نفخر بالتعاون مع أفضل العلامات التجارية العالمية في الصناعة</p>
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
-                    <div class="bg-white p-6 rounded-xl shadow text-center hover:bg-primary hover:text-secondary transition-all group">
-                        <div class="text-4xl text-primary group-hover:text-secondary mb-4 opacity-30 font-extrabold">01</div>
-                        <h4 class="font-bold text-xl mb-3" data-i18n="val1_title">الجودة والتميز</h4>
-                        <p class="text-sm text-gray-600 group-hover:text-secondary font-medium" data-i18n="val1_desc">تقديم أعلى مستويات الجودة لضمان رضا عملائنا واستمرارية أعمالهم.</p>
-                    </div>
-                    <div class="bg-white p-6 rounded-xl shadow text-center hover:bg-primary hover:text-secondary transition-all group">
-                        <div class="text-4xl text-primary group-hover:text-secondary mb-4 opacity-30 font-extrabold">02</div>
-                        <h4 class="font-bold text-xl mb-3" data-i18n="val2_title">الابتكار</h4>
-                        <p class="text-sm text-gray-600 group-hover:text-secondary font-medium" data-i18n="val2_desc">تقديم حلول متطورة تلبي احتياجات السوق وتتخطى التوقعات.</p>
-                    </div>
-                    <div class="bg-white p-6 rounded-xl shadow text-center hover:bg-primary hover:text-secondary transition-all group">
-                        <div class="text-4xl text-primary group-hover:text-secondary mb-4 opacity-30 font-extrabold">03</div>
-                        <h4 class="font-bold text-xl mb-3" data-i18n="val3_title">الثقة والشفافية</h4>
-                        <p class="text-sm text-gray-600 group-hover:text-secondary font-medium" data-i18n="val3_desc">بناء علاقات قائمة على الثقة المتبادلة بالتعامل بشفافية وأمانة.</p>
-                    </div>
-                    <div class="bg-white p-6 rounded-xl shadow text-center hover:bg-primary hover:text-secondary transition-all group">
-                        <div class="text-4xl text-primary group-hover:text-secondary mb-4 opacity-30 font-extrabold">04</div>
-                        <h4 class="font-bold text-xl mb-3" data-i18n="val4_title">الشراكات القوية</h4>
-                        <p class="text-sm text-gray-600 group-hover:text-secondary font-medium" data-i18n="val4_desc">تعزيز التعاون المثمر مع موردينا وعملائنا لإيماننا بأن النجاح يبنى معاً.</p>
-                    </div>
-                    <div class="bg-white p-6 rounded-xl shadow text-center hover:bg-primary hover:text-secondary transition-all group">
-                        <div class="text-4xl text-primary group-hover:text-secondary mb-4 opacity-30 font-extrabold">05</div>
-                        <h4 class="font-bold text-xl mb-3" data-i18n="val5_title">التفاني والالتزام</h4>
-                        <p class="text-sm text-gray-600 group-hover:text-secondary font-medium" data-i18n="val5_desc">الالتزام بتقديم أفضل الخدمات والتركيز على تلبية احتياجات العملاء بسرعة.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="py-20 bg-white" id="services">
-        <div class="container mx-auto px-6">
-            <div class="text-center mb-16">
-                <div class="inline-block px-3 py-1 bg-secondary text-primary font-bold rounded-full mb-4 text-sm" data-i18n="services_badge">ما نقدمه لعملائنا</div>
-                <h2 class="text-4xl font-bold text-secondary mb-4" data-i18n="services_title">خـدمـاتـنـا</h2>
-                <p class="text-gray-600 max-w-2xl mx-auto text-lg" data-i18n="services_subtitle">
-                    تقدم شركة كنارة العربية مجموعة متنوعة من الخدمات المتكاملة لتلبية احتياجات عملائنا في قطاع المعدات الثقيلة.
-                </p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Service 1 -->
-                <div class="bg-lightGray rounded-2xl p-8 service-card transition-all duration-300 border border-gray-100">
-                    <div class="w-14 h-14 bg-primary text-secondary rounded-lg flex items-center justify-center text-2xl mb-6">
-                        <i class="fas fa-cogs"></i>
-                    </div>
-                    <h3 class="text-2xl font-bold text-secondary mb-4" data-i18n="srv1_title">توفير قطع غيار المعدات</h3>
-                    <p class="text-gray-600 leading-relaxed text-justify" data-i18n="srv1_desc">
-                        نتخصص في توفير قطع غيار عالية الجودة لكافة أنواع المعدات الثقيلة، حيث نحرص على توفير مجموعة واسعة من القطع من موردينا في إيطاليا وأمريكا وغيرها للحفاظ على أداء المعدات بكفاءة.
-                    </p>
-                </div>
-                
-                <!-- Service 2 -->
-                <div class="bg-lightGray rounded-2xl p-8 service-card transition-all duration-300 border border-gray-100">
-                    <div class="w-14 h-14 bg-primary text-secondary rounded-lg flex items-center justify-center text-2xl mb-6">
-                        <i class="fas fa-headset"></i>
-                    </div>
-                    <h3 class="text-2xl font-bold text-secondary mb-4" data-i18n="srv2_title">مركز استقبال العملاء</h3>
-                    <p class="text-gray-600 leading-relaxed text-justify" data-i18n="srv2_desc">
-                        تمتلك شركتنا مركز استقبال عملاء مصمم لتسجيل طلبات وملاحظات ومقترحات العملاء وتوجيهها للوحدات المختصة. فريقنا المدرب يقدم الدعم لضمان تلبية جميع الاحتياجات بفعالية.
-                    </p>
-                </div>
-
-                <!-- Service 3 -->
-                <div class="bg-lightGray rounded-2xl p-8 service-card transition-all duration-300 border border-gray-100">
-                    <div class="w-14 h-14 bg-primary text-secondary rounded-lg flex items-center justify-center text-2xl mb-6">
-                        <i class="fas fa-tools"></i>
-                    </div>
-                    <h3 class="text-2xl font-bold text-secondary mb-4" data-i18n="srv3_title">تجهيز القطع غير المتوفرة</h3>
-                    <p class="text-gray-600 leading-relaxed text-justify" data-i18n="srv3_desc">
-                        في حالة عدم توفر القطع المطلوبة في مخازننا، نقدم خدمة تجهيزها خصيصاً لكم. نعمل بشكل وثيق مع شبكة موردينا لضمان توفيرها في أسرع وقت ممكن لتقليل أوقات الانتظار.
-                    </p>
-                </div>
-
-                <!-- Service 4 -->
-                <div class="bg-lightGray rounded-2xl p-8 service-card transition-all duration-300 border border-gray-100">
-                    <div class="w-14 h-14 bg-primary text-secondary rounded-lg flex items-center justify-center text-2xl mb-6">
-                        <i class="fas fa-truck-fast"></i>
-                    </div>
-                    <h3 class="text-2xl font-bold text-secondary mb-4" data-i18n="srv4_title">خدمات الشحن</h3>
-                    <p class="text-gray-600 leading-relaxed text-justify" data-i18n="srv4_desc">
-                        نقدم حلول شحن متكاملة وسريعة إلى مختلف مدن المملكة تضمن وصول المنتجات بأمان وفي الوقت المحدد باستخدام أحدث وسائل النقل وتتبع الشحنات.
-                    </p>
-                </div>
-
-                <!-- Service 5 -->
-                <div class="bg-lightGray rounded-2xl p-8 service-card transition-all duration-300 border border-gray-100 lg:col-span-2">
-                    <div class="w-14 h-14 bg-primary text-secondary rounded-lg flex items-center justify-center text-2xl mb-6">
-                        <i class="fas fa-user-check"></i>
-                    </div>
-                    <h3 class="text-2xl font-bold text-secondary mb-4" data-i18n="srv5_title">خدمة العملاء ومتابعة ما بعد البيع</h3>
-                    <p class="text-gray-600 leading-relaxed text-justify" data-i18n="srv5_desc">
-                        نحرص على تقديم دعم مستمر لعملائنا، بدءاً من استفسارات العملاء الأولية وحتى متابعة ما بعد البيع. يتولى فريق خدمة العملاء الإجابة على الأسئلة وحل المشاكل لضمان تجربة سلسة.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="py-16 bg-gray-900 text-white" id="suppliers">
-        <div class="container mx-auto px-6">
-            <div class="text-center mb-10">
-                <h2 class="text-3xl font-bold text-primary mb-2" data-i18n="suppliers_title">شركاؤنا وموردونا</h2>
-                <p class="text-gray-400" data-i18n="suppliers_subtitle">نفخر بالتعاون مع أفضل العلامات التجارية العالمية في الصناعة</p>
-            </div>
-            
-            <!-- شبكة الموردين لتضم شعارات الموردين المعتمدين الـ 8 بالتفصيل -->
-            <div class="suppliers-grid grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 justify-items-center">
-                
-                <!-- 1. ASI -->
-                <div class="supplier-card bg-white p-4 rounded-xl shadow-lg flex flex-col items-center justify-center w-full h-44 border-2 border-primary/20 hover:border-primary transition-all overflow-hidden">
-                    <div class="w-full h-full flex items-center justify-center p-2 relative">
+                <div class="suppliers-grid grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 justify-items-center">
+                    <div class="supplier-card bg-white p-4 rounded-xl shadow-lg flex flex-col items-center justify-center w-full h-44 border-2 border-primary/20 hover:border-primary transition-all overflow-hidden">
                         <img src="https://i.postimg.cc/28596KYp/asi-usa-png.jpg" alt="American Spares Industries ASI" class="supplier-logo" onerror="this.onerror=null; this.src='https://placehold.co/300x150/1A1A1A/FBB03B?text=ASI+USA';">
                     </div>
-                </div>
-
-                <!-- 2. USCO / ITR -->
-                <div class="supplier-card bg-white p-4 rounded-xl shadow-lg flex flex-col items-center justify-center w-full h-44 border-2 border-primary/20 hover:border-primary transition-all overflow-hidden">
-                    <div class="w-full h-full flex items-center justify-center p-2 relative">
+                    <div class="supplier-card bg-white p-4 rounded-xl shadow-lg flex flex-col items-center justify-center w-full h-44 border-2 border-primary/20 hover:border-primary transition-all overflow-hidden">
                         <img src="https://i.ibb.co/fdSgdX53/itr-png.png" alt="USCO ITR" class="supplier-logo" onerror="this.onerror=null; this.src='https://placehold.co/300x150/1A1A1A/FBB03B?text=USCO+%2F+ITR';">
                     </div>
-                </div>
-
-                <!-- 3. Bulldog -->
-                <div class="supplier-card bg-white p-4 rounded-xl shadow-lg flex flex-col items-center justify-center w-full h-44 border-2 border-primary/20 hover:border-primary transition-all overflow-hidden">
-                    <div class="w-full h-full flex items-center justify-center p-2 relative">
+                    <div class="supplier-card bg-white p-4 rounded-xl shadow-lg flex flex-col items-center justify-center w-full h-44 border-2 border-primary/20 hover:border-primary transition-all overflow-hidden">
                         <img src="https://i.ibb.co/v4WMNTkf/bulldog-png.jpg" alt="Bulldog" class="supplier-logo" onerror="this.onerror=null; this.src='https://placehold.co/300x150/1A1A1A/FBB03B?text=BULLDOG';">
                     </div>
-                </div>
-
-                <!-- 4. CGR Ghinassi -->
-                <div class="supplier-card bg-white p-4 rounded-xl shadow-lg flex flex-col items-center justify-center w-full h-44 border-2 border-primary/20 hover:border-primary transition-all overflow-hidden">
-                    <div class="w-full h-full flex items-center justify-center p-2 relative">
+                    <div class="supplier-card bg-white p-4 rounded-xl shadow-lg flex flex-col items-center justify-center w-full h-44 border-2 border-primary/20 hover:border-primary transition-all overflow-hidden">
                         <img src="https://i.postimg.cc/cCFDhQQn/cgr-ghinassi-png.jpg" alt="CGR Ghinassi" class="supplier-logo" onerror="this.onerror=null; this.src='https://placehold.co/300x150/1A1A1A/FBB03B?text=CGR+Ghinassi';">
                     </div>
-                </div>
-
-                <!-- 5. FP Diesel -->
-                <div class="supplier-card bg-white p-4 rounded-xl shadow-lg flex flex-col items-center justify-center w-full h-44 border-2 border-primary/20 hover:border-primary transition-all overflow-hidden">
-                    <div class="w-full h-full flex items-center justify-center p-2 relative">
+                    <div class="supplier-card bg-white p-4 rounded-xl shadow-lg flex flex-col items-center justify-center w-full h-44 border-2 border-primary/20 hover:border-primary transition-all overflow-hidden">
                         <img src="https://i.ibb.co/rS3zWgS/fp-diesel-png.png" alt="FP Diesel" class="supplier-logo" onerror="this.onerror=null; this.src='https://placehold.co/300x150/1A1A1A/FBB03B?text=FP+Diesel';">
                     </div>
-                </div>
-
-                <!-- 6. Phillips Gasket -->
-                <div class="supplier-card bg-white p-4 rounded-xl shadow-lg flex flex-col items-center justify-center w-full h-44 border-2 border-primary/20 hover:border-primary transition-all overflow-hidden">
-                    <div class="w-full h-full flex items-center justify-center p-2 relative">
+                    <div class="supplier-card bg-white p-4 rounded-xl shadow-lg flex flex-col items-center justify-center w-full h-44 border-2 border-primary/20 hover:border-primary transition-all overflow-hidden">
                         <img src="https://i.postimg.cc/pXDQPQ9f/phillips-gasket-png.jpg" alt="Phillips Gasket" class="supplier-logo" onerror="this.onerror=null; this.src='https://placehold.co/300x150/1A1A1A/FBB03B?text=Phillips+Gasket';">
                     </div>
-                </div>
-
-                <!-- 7. World Gasket / Ellegi -->
-                <div class="supplier-card bg-white p-4 rounded-xl shadow-lg flex flex-col items-center justify-center w-full h-44 border-2 border-primary/20 hover:border-primary transition-all overflow-hidden">
-                    <div class="w-full h-full flex items-center justify-center p-2 relative">
+                    <div class="supplier-card bg-white p-4 rounded-xl shadow-lg flex flex-col items-center justify-center w-full h-44 border-2 border-primary/20 hover:border-primary transition-all overflow-hidden">
                         <img src="https://i.ibb.co/r2CZGX67/world-gasket-png.png" alt="World Gasket Ellegi" class="supplier-logo" onerror="this.onerror=null; this.src='https://placehold.co/300x150/1A1A1A/FBB03B?text=World+Gasket';">
                     </div>
-                </div>
-
-                <!-- 8. Sync Part -->
-                <div class="supplier-card bg-white p-4 rounded-xl shadow-lg flex flex-col items-center justify-center w-full h-44 border-2 border-primary/20 hover:border-primary transition-all overflow-hidden">
-                    <div class="w-full h-full flex items-center justify-center p-2 relative">
+                    <div class="supplier-card bg-white p-4 rounded-xl shadow-lg flex flex-col items-center justify-center w-full h-44 border-2 border-primary/20 hover:border-primary transition-all overflow-hidden">
                         <img src="https://i.postimg.cc/prBd6dTF/sync-part.png" alt="Sync Part" class="supplier-logo" onerror="this.onerror=null; this.src='https://placehold.co/300x150/1A1A1A/FBB03B?text=Sync+Part';">
                     </div>
                 </div>
+            </div>
+        </section>
+    </div>
 
+    <!-- DEDICATED PRODUCTS & EQUIPMENT SECOND PAGE (صفحة المنتجات والمعدات التفاعلية) -->
+    <div id="products-page-view" class="view-section hidden pt-24 min-h-screen bg-gray-50">
+        
+        <!-- Header Banner for Products Page -->
+        <div class="bg-gradient-to-r from-secondary via-darkGray to-secondary text-white py-12 px-6 shadow-inner">
+            <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+                <div>
+                    <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-3" data-i18n="p_title">دليل المعدات الثقيلة والمنتجات</h1>
+                    <p class="text-gray-300 max-w-2xl text-base md:text-lg" data-i18n="p_desc">
+                        استخدم محرك البحث المتقدم لتصفية ورؤية قطع الغيار حسب الماركة ورقم القطعة ونوع المعدة.
+                    </p>
+                </div>
+                <button onclick="navigateTo('home')" class="bg-gray-800 hover:bg-gray-700 text-white px-5 py-2.5 rounded-xl border border-gray-600 font-semibold text-sm transition-all flex items-center gap-2 shrink-0">
+                    <i class="fas fa-arrow-right ltr:rotate-180"></i> <span data-i18n="btn_back_home">العودة للرئيسية</span>
+                </button>
             </div>
         </div>
-    </section>
 
+        <!-- THREE WHITE FEATURED CARDS (ثلاث مربعات بيضاء تمييزية) -->
+        <section class="py-8 bg-gray-100/50 border-b border-gray-200">
+            <div class="container mx-auto px-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    
+                    <!-- Card 1: CAT -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg border-2 border-primary/20 hover:border-primary transition-all flex flex-col items-center justify-center text-center group hover:-translate-y-1">
+                        <div class="h-28 w-full flex items-center justify-center overflow-hidden">
+                            <img src="https://i.postimg.cc/4x70fZ2v/CAT.png" alt="CAT Caterpillar" class="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105" onerror="this.onerror=null; this.src='https://placehold.co/200x100/1A1A1A/FBB03B?text=CAT';">
+                        </div>
+                    </div>
+
+                    <!-- Card 2: JCB -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg border-2 border-primary/20 hover:border-primary transition-all flex flex-col items-center justify-center text-center group hover:-translate-y-1">
+                        <div class="h-28 w-full flex items-center justify-center overflow-hidden">
+                            <img src="https://i.postimg.cc/15zTdDpp/JCB.png" alt="JCB Equipment" class="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105" onerror="this.onerror=null; this.src='https://placehold.co/200x100/1A1A1A/FBB03B?text=JCB';">
+                        </div>
+                    </div>
+
+                    <!-- Card 3: BOBCAT -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg border-2 border-primary/20 hover:border-primary transition-all flex flex-col items-center justify-center text-center group hover:-translate-y-1">
+                        <div class="h-28 w-full flex items-center justify-center overflow-hidden">
+                            <img src="https://i.postimg.cc/sXrfPTGc/BOBCAT.png" alt="Bobcat Equipment" class="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105" onerror="this.onerror=null; this.src='https://placehold.co/200x100/1A1A1A/FBB03B?text=BOBCAT';">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- SEARCH BAR & FILTERS (خانة البحث للمعدات مع فلاتر البحث) -->
+        <section class="py-6 bg-white border-y border-gray-200 shadow-sm sticky top-[72px] z-40">
+            <div class="container mx-auto px-6">
+                
+                <!-- Main Search Bar -->
+                <div class="relative mb-4">
+                    <div class="absolute inset-y-0 right-0 ltr:right-auto ltr:left-0 pr-4 ltr:pr-0 ltr:pl-4 flex items-center pointer-events-none text-gray-400">
+                        <i class="fas fa-search text-xl"></i>
+                    </div>
+                    <input type="text" id="searchInput" oninput="applyFilters()" placeholder="ابحث برقم القطعة (Part #)، اسم القطعة، أو الموديل..." class="w-full pr-12 ltr:pr-4 ltr:pl-12 py-3.5 bg-gray-100 border border-gray-300 rounded-xl font-semibold text-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white transition-all text-sm md:text-base">
+                    <button onclick="clearSearch()" class="absolute inset-y-0 left-0 ltr:left-auto ltr:right-0 pl-4 ltr:pl-0 ltr:pr-4 text-xs font-bold text-gray-400 hover:text-red-500 hidden" id="clearSearchBtn">
+                        إلغاء البحث <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <!-- Filter Controls Grid -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    
+                    <!-- Filter 1: Equipment Type -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 mb-1" data-i18n="filter_eq_type">نوع المعدة</label>
+                        <select id="eqFilter" onchange="applyFilters()" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-xs md:text-sm font-semibold text-secondary focus:ring-1 focus:ring-primary focus:outline-none">
+                            <option value="all" data-i18n="opt_all_eq">جميع المعدات</option>
+                            <option value="excavator" data-i18n="opt_excavator">حفارات (Excavators)</option>
+                            <option value="bulldozer" data-i18n="opt_bulldozer">بلدوزرات (Bulldozers)</option>
+                            <option value="loader" data-i18n="opt_loader">شيولات (Wheel Loaders)</option>
+                            <option value="truck" data-i18n="opt_truck">شاحنات وقلابات (Trucks)</option>
+                            <option value="crane" data-i18n="opt_crane">رافعات ومولدات (Cranes/Generators)</option>
+                        </select>
+                    </div>
+
+                    <!-- Filter 2: Brand / Manufacturer -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 mb-1" data-i18n="filter_brand">الماركة / المورد</label>
+                        <select id="brandFilter" onchange="applyFilters()" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-xs md:text-sm font-semibold text-secondary focus:ring-1 focus:ring-primary focus:outline-none">
+                            <option value="all" data-i18n="opt_all_brands">جميع الماركات العالمية</option>
+                            <option value="ITR">USCO ITR (إيطاليا)</option>
+                            <option value="CGR">CGR Ghinassi (إيطاليا)</option>
+                            <option value="Bulldog">Bulldog Gaskets (أمريكا)</option>
+                            <option value="ASI">ASI Spares (أمريكا)</option>
+                            <option value="FP Diesel">FP Diesel (فيدرال موغل)</option>
+                            <option value="Phillips">Phillips Gasket</option>
+                        </select>
+                    </div>
+
+                    <!-- Filter 3: Category -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 mb-1" data-i18n="filter_cat">تصنيف القطعة</label>
+                        <select id="catFilter" onchange="applyFilters()" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-xs md:text-sm font-semibold text-secondary focus:ring-1 focus:ring-primary focus:outline-none">
+                            <option value="all" data-i18n="opt_all_cats">كافة التصنيفات</option>
+                            <option value="engine" data-i18n="opt_cat_engine">أجزاء المحركات (Engine Parts)</option>
+                            <option value="hydraulic" data-i18n="opt_cat_hydraulic">النظام الهيدروليكي (Hydraulics)</option>
+                            <option value="undercarriage" data-i18n="opt_cat_under">الجنازير والتعليق (Undercarriage)</option>
+                            <option value="gaskets" data-i18n="opt_cat_gasket">وجيه وطقم أختام (Gaskets & Seals)</option>
+                        </select>
+                    </div>
+
+                    <!-- Filter 4: Reset Button -->
+                    <div class="flex items-end">
+                        <button onclick="resetAllFilters()" class="w-full bg-gray-200 hover:bg-gray-300 text-secondary p-2.5 rounded-lg text-xs md:text-sm font-bold transition-colors flex items-center justify-center gap-2">
+                            <i class="fas fa-undo"></i> <span data-i18n="btn_reset_filters">إعادة ضبط</span>
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: PRODUCTS CATALOG GRID (نتائج البحث ورسائل الكتالوج) -->
+        <section class="py-12 container mx-auto px-6">
+            
+            <div class="flex justify-between items-center mb-6">
+                <p class="text-sm font-bold text-gray-600">
+                    <span data-i18n="search_results_found">تم العثور على:</span> 
+                    <span id="resultsCount" class="text-primary font-extrabold text-base bg-secondary text-white px-2 py-0.5 rounded-md">0</span> 
+                    <span data-i18n="parts_item_label">قطعة غيار مطابقة</span>
+                </p>
+                
+                <span class="text-xs text-gray-400 font-semibold" id="activeFilterBadge">عرض كل المنتجات</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" id="productsGrid">
+                <!-- Dynamic Javascript rendering will insert product cards here -->
+            </div>
+
+            <!-- Empty Search Results State -->
+            <div id="noResultsMsg" class="hidden text-center py-16 bg-white rounded-2xl border border-gray-200 my-6">
+                <div class="w-16 h-16 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mx-auto text-3xl mb-4">
+                    <i class="fas fa-search-minus"></i>
+                </div>
+                <h3 class="text-xl font-bold text-secondary mb-2" data-i18n="no_res_title">لم نجد نتائج مطابقة لجهد بحثك</h3>
+                <p class="text-gray-500 text-sm max-w-md mx-auto mb-6" data-i18n="no_res_desc">يمكننا توفير أي قطعة غير متوفرة في القائمة مباشرة عبر خدمة التجهيز الخاص بمساعدة فريقنا المباشر.</p>
+                <button onclick="requestCustomPart()" class="bg-secondary text-primary font-bold px-6 py-3 rounded-xl hover:bg-darkGray transition-colors inline-flex items-center gap-2">
+                    <i class="fab fa-whatsapp text-lg"></i> <span data-i18n="btn_req_unlisted">طلب توفير قطعة غير مدرجة</span>
+                </button>
+            </div>
+
+        </section>
+
+    </div>
+
+    <div id="admin-view" class="view-section hidden pt-24 min-h-screen bg-gray-100">
+        <!-- Admin Dashboard Header -->
+        <div class="bg-secondary text-white py-8 px-6 border-b-4 border-primary">
+            <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-primary text-secondary rounded-xl flex items-center justify-center text-2xl font-bold shadow-md">
+                        <i class="fas fa-tools"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-extrabold text-white">لوحة إدراج وإدارة المنتجات (خاص بالمالك)</h1>
+                        <p class="text-gray-400 text-xs md:text-sm">قم بجميع عمليات إضافة، تعديل وحذف قطع الغيار ليراها العمال والزبائن مباشرة.</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="openProductModal()" class="bg-primary hover:bg-yellow-500 text-secondary font-bold px-5 py-2.5 rounded-xl transition-all shadow flex items-center gap-2 text-sm">
+                        <i class="fas fa-plus-circle text-base"></i> إضافة قطعة غيار جديدة
+                    </button>
+                    <button onclick="navigateTo('products')" class="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2.5 rounded-xl border border-gray-600 font-bold text-xs transition-all">
+                        معاينة كتالوج الزبائن <i class="fas fa-eye ml-1"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="container mx-auto px-6 py-8">
+            <!-- Admin Stats Row -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-2xl shadow border-r-4 border-primary flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-gray-500 uppercase">إجمالي المنتجات بالموقع</p>
+                        <h3 class="text-3xl font-black text-secondary mt-1" id="statTotalProducts">0</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-yellow-50 text-primary rounded-xl flex items-center justify-center text-xl">
+                        <i class="fas fa-boxes"></i>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow border-r-4 border-green-500 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-gray-500 uppercase">القطع المتوفرة بالمخزن</p>
+                        <h3 class="text-3xl font-black text-green-600 mt-1" id="statInStock">0</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-green-50 text-green-600 rounded-xl flex items-center justify-center text-xl">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow border-r-4 border-blue-500 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-gray-500 uppercase">قطع التوريد الخاص</p>
+                        <h3 class="text-3xl font-black text-blue-600 mt-1" id="statOnOrder">0</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl">
+                        <i class="fas fa-truck-loading"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products Management Table -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+                <div class="p-6 bg-gray-50 border-b border-gray-200 flex justify-between items-center flex-wrap gap-4">
+                    <h3 class="font-extrabold text-lg text-secondary flex items-center gap-2">
+                        <i class="fas fa-list-alt text-primary"></i> قائمة قطع الغيار المعروضة حالياً
+                    </h3>
+                    <input type="text" id="adminSearchInput" oninput="filterAdminTable()" placeholder="تصفية بالقائمة برقم القطعة أو الاسم..." class="bg-white border border-gray-300 rounded-xl px-4 py-2 text-xs md:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary w-full md:w-72">
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right text-sm">
+                        <thead class="bg-secondary text-white text-xs font-bold uppercase">
+                            <tr>
+                                <th class="p-4">الصورة والقطعة</th>
+                                <th class="p-4">رقم القطعة (P/N)</th>
+                                <th class="p-4">المعدة والماركة</th>
+                                <th class="p-4">التصنيف</th>
+                                <th class="p-4">التوفر</th>
+                                <th class="p-4 text-center">الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminProductsTableBody" class="divide-y divide-gray-200 font-semibold text-gray-700">
+                            <!-- Dynamic Table Rows inserted via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Login Modal -->
+    <div id="adminLoginModal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 hidden backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 border-t-4 border-primary relative">
+            <button onclick="closeAdminLoginModal()" class="absolute top-4 left-4 text-gray-400 hover:text-red-500 text-xl font-bold">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-primary/20 text-secondary rounded-full flex items-center justify-center text-3xl mx-auto mb-3">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <h3 class="text-2xl font-extrabold text-secondary">دخول لوحة إدارة الكتالوج</h3>
+                <p class="text-xs text-gray-500 mt-1">أدخل كلمة المرور الخاصة بالإدارة للوصول لصفحة إضافة المنتجات</p>
+            </div>
+
+            <form onsubmit="handleAdminLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">كلمة المرور الخاصة بك</label>
+                    <input type="password" id="adminPasscode" placeholder="أدخل كلمة المرور (الافتراضية: 1234)" required class="w-full p-3 border border-gray-300 rounded-xl font-mono text-center text-lg focus:ring-2 focus:ring-primary focus:outline-none">
+                </div>
+                <div id="loginErrorMsg" class="text-red-500 text-xs font-bold text-center hidden">
+                    كلمة المرور غير صحيحة، يرجى المحاولة مرة أخرى.
+                </div>
+                <button type="submit" class="w-full bg-primary hover:bg-yellow-500 text-secondary font-bold py-3 rounded-xl transition-all shadow text-sm">
+                    تأكيد الدخول <i class="fas fa-sign-in-alt mr-2"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add / Edit Product Modal -->
+    <div id="productFormModal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 hidden overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 md:p-8 border-t-4 border-primary relative my-8">
+            <button onclick="closeProductModal()" class="absolute top-4 left-4 text-gray-400 hover:text-red-500 text-xl font-bold">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <h3 class="text-2xl font-extrabold text-secondary mb-6 border-b pb-3 flex items-center gap-2" id="modalTitle">
+                <i class="fas fa-plus-circle text-primary"></i> إضافة قطعة غيار جديدة
+            </h3>
+
+            <form id="productForm" onsubmit="saveProduct(event)" class="space-y-4">
+                <input type="hidden" id="editProductId" value="">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">اسم القطعة (بالعربي)</label>
+                        <input type="text" id="pTitle" required placeholder="مثال: طقم بساتم محرك 3306" class="w-full p-2.5 border border-gray-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-primary focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">رقم القطعة (Part Number P/N)</label>
+                        <input type="text" id="pPartNo" required placeholder="مثال: 1N4380" class="w-full p-2.5 border border-gray-300 rounded-xl text-sm font-semibold font-mono focus:ring-2 focus:ring-primary focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">نوع المعدة</label>
+                        <select id="pEqType" required class="w-full p-2.5 border border-gray-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-primary focus:outline-none">
+                            <option value="excavator">حفارات (Excavators)</option>
+                            <option value="bulldozer">بلدوزرات (Bulldozers)</option>
+                            <option value="loader">شيولات (Wheel Loaders)</option>
+                            <option value="truck">شاحنات وقلابات (Trucks)</option>
+                            <option value="crane">رافعات ومولدات (Cranes/Generators)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">الماركة / المورد</label>
+                        <select id="pBrand" required class="w-full p-2.5 border border-gray-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-primary focus:outline-none">
+                            <option value="CGR">CGR Ghinassi</option>
+                            <option value="ITR">USCO ITR</option>
+                            <option value="Bulldog">Bulldog Gaskets</option>
+                            <option value="ASI">ASI Spares</option>
+                            <option value="FP Diesel">FP Diesel</option>
+                            <option value="Phillips">Phillips Gasket</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">التصنيف الرئيسي</label>
+                        <select id="pCategory" required class="w-full p-2.5 border border-gray-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-primary focus:outline-none">
+                            <option value="engine">أجزاء المحركات</option>
+                            <option value="hydraulic">النظام الهيدروليكي</option>
+                            <option value="undercarriage">الجنازير والتعليق</option>
+                            <option value="gaskets">وجيه وطقم أختام</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">حالة توفر القطعة</label>
+                        <select id="pStatus" required class="w-full p-2.5 border border-gray-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-primary focus:outline-none">
+                            <option value="instock">متوفر بالمخزن</option>
+                            <option value="custom">طلب خاص / توريد</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">رابط صورة القطعة (Image URL)</label>
+                        <input type="url" id="pImgUrl" placeholder="https://..." class="w-full p-2.5 border border-gray-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-primary focus:outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">وصف مختصر للقطعة والمواصفات</label>
+                    <textarea id="pDesc" rows="2" placeholder="أدخل تفاصيل التوافق مع المعدات والمواصفات الفنية..." class="w-full p-2.5 border border-gray-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-primary focus:outline-none"></textarea>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t">
+                    <button type="button" onclick="closeProductModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold px-5 py-2.5 rounded-xl text-xs transition-colors">
+                        إلغاء
+                    </button>
+                    <button type="submit" class="bg-primary hover:bg-yellow-500 text-secondary font-bold px-6 py-2.5 rounded-xl text-xs transition-colors shadow">
+                        حفظ القطعة في الكتالوج
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification Toast Box -->
+    <div id="toastBox" class="fixed bottom-6 left-6 bg-secondary text-white border-2 border-primary px-6 py-3 rounded-xl shadow-2xl z-50 transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-3">
+        <i class="fas fa-check-circle text-primary text-xl"></i>
+        <span id="toastMsg" class="font-bold text-sm">تم إجراء التعديل بنجاح</span>
+    </div>
+
+    <!-- FOOTER -->
     <footer class="bg-secondary text-white pt-20 pb-10" id="contact">
         <div class="container mx-auto px-6">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 border-b border-gray-700 pb-12 mb-10">
                 
                 <!-- Brand Col -->
                 <div class="lg:col-span-1">
-                    <a href="#" class="flex items-center gap-3 mb-6">
+                    <a href="javascript:void(0)" onclick="navigateTo('home')" class="flex items-center gap-3 mb-6">
                         <div class="w-12 h-12 bg-transparent rounded-lg flex items-center justify-center p-0.5">
                             <img src="https://i.postimg.cc/brYG8n44/canara-logo.png" alt="شعار شركة كنارة العربية" class="w-full h-full object-contain filter drop-shadow" onerror="this.src='https://placehold.co/100x100/1A1A1A/FBB03B?text=C'">
                         </div>
@@ -387,10 +736,11 @@
                 <div>
                     <h4 class="text-xl font-bold mb-6 text-primary border-b-2 border-primary inline-block pb-1" data-i18n="footer_links_title">روابط سريعة</h4>
                     <ul class="space-y-3 text-gray-400">
-                        <li><a href="#about" class="hover:text-primary transition-colors"><i class="fas fa-chevron-left ltr:rotate-180 text-xs ml-2 ltr:ml-0 ltr:mr-2 text-primary"></i> <span data-i18n="footer_link_about">عن الشركة</span></a></li>
-                        <li><a href="#vision" class="hover:text-primary transition-colors"><i class="fas fa-chevron-left ltr:rotate-180 text-xs ml-2 ltr:ml-0 ltr:mr-2 text-primary"></i> <span data-i18n="footer_link_vision">الرؤية والرسالة</span></a></li>
-                        <li><a href="#services" class="hover:text-primary transition-colors"><i class="fas fa-chevron-left ltr:rotate-180 text-xs ml-2 ltr:ml-0 ltr:mr-2 text-primary"></i> <span data-i18n="footer_link_services">خدماتنا</span></a></li>
-                        <li><a href="#suppliers" class="hover:text-primary transition-colors"><i class="fas fa-chevron-left ltr:rotate-180 text-xs ml-2 ltr:ml-0 ltr:mr-2 text-primary"></i> <span data-i18n="footer_link_suppliers">الموردون</span></a></li>
+                        <li><a href="javascript:void(0)" onclick="navigateTo('home', 'about')" class="hover:text-primary transition-colors"><i class="fas fa-chevron-left ltr:rotate-180 text-xs ml-2 ltr:ml-0 ltr:mr-2 text-primary"></i> <span data-i18n="footer_link_about">عن الشركة</span></a></li>
+                        <li><a href="javascript:void(0)" onclick="navigateTo('home', 'vision')" class="hover:text-primary transition-colors"><i class="fas fa-chevron-left ltr:rotate-180 text-xs ml-2 ltr:ml-0 ltr:mr-2 text-primary"></i> <span data-i18n="footer_link_vision">الرؤية والرسالة</span></a></li>
+                        <li><a href="javascript:void(0)" onclick="navigateTo('home', 'services')" class="hover:text-primary transition-colors"><i class="fas fa-chevron-left ltr:rotate-180 text-xs ml-2 ltr:ml-0 ltr:mr-2 text-primary"></i> <span data-i18n="footer_link_services">خدماتنا</span></a></li>
+                        <li><a href="javascript:void(0)" onclick="navigateTo('products')" class="hover:text-primary text-primary transition-colors font-bold"><i class="fas fa-chevron-left ltr:rotate-180 text-xs ml-2 ltr:ml-0 ltr:mr-2 text-primary"></i> <span data-i18n="nav_products">دليل المنتجات والمعدات</span></a></li>
+                        <li><a href="javascript:void(0)" onclick="navigateTo('home', 'suppliers')" class="hover:text-primary transition-colors"><i class="fas fa-chevron-left ltr:rotate-180 text-xs ml-2 ltr:ml-0 ltr:mr-2 text-primary"></i> <span data-i18n="footer_link_suppliers">الموردون</span></a></li>
                     </ul>
                 </div>
 
@@ -447,7 +797,102 @@
     </footer>
 
     <script>
-        // Translations Dictionary
+        // Default initial catalog database
+        const defaultProducts = [
+            {
+                id: "prod-1",
+                title: "طقم بساتم وشنابر محرك 3306",
+                partno: "1N4380",
+                eqType: "excavator",
+                brand: "CGR",
+                category: "engine",
+                status: "instock",
+                imgUrl: "https://images.unsplash.com/photo-1590823295982-f472ce10c14b?auto=format&fit=crop&q=80&w=600",
+                desc: "مناسب لحفارات كاتربلر 330D وبلدوزر D6R. صناعة إيطالية عالية التحمل."
+            },
+            {
+                id: "prod-2",
+                title: "طرمبة هيدروليك رئيسية ITR",
+                partno: "9T8492",
+                eqType: "loader",
+                brand: "ITR",
+                category: "hydraulic",
+                status: "instock",
+                imgUrl: "https://images.unsplash.com/photo-1612803875567-27a3c306d8bc?auto=format&fit=crop&q=80&w=600",
+                desc: "مخصصة لشيولات كاتربلر 966F و 966G بأعلى معايير تدفق الضغط."
+            },
+            {
+                id: "prod-3",
+                title: "جنزير وسلاسل بلدوزر D8T / D8R",
+                partno: "8E4502",
+                eqType: "bulldozer",
+                brand: "ITR",
+                category: "undercarriage",
+                status: "custom",
+                imgUrl: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=600",
+                desc: "سلاسل مجنزرة مسبكة ومقاومة للتآكل للعمل في الظروف الصخرية القاسية."
+            },
+            {
+                id: "prod-4",
+                title: "طقم أختام ووجيه بستم بولدوج",
+                partno: "BK-70921",
+                eqType: "excavator",
+                brand: "Bulldog",
+                category: "gaskets",
+                status: "instock",
+                imgUrl: "https://images.unsplash.com/photo-1621808603632-1b15c9162985?auto=format&fit=crop&q=80&w=600",
+                desc: "طقم اصلاح سلندر الحفر الرئيسي لحفارات كوماتسو PC300 و CAT 320."
+            },
+            {
+                id: "prod-5",
+                title: "طقم سبايك ثابته ومتحركة FP Diesel",
+                partno: "FP-3802070",
+                eqType: "crane",
+                brand: "FP Diesel",
+                category: "engine",
+                status: "instock",
+                imgUrl: "https://images.unsplash.com/photo-1579912441991-84c4e7ab5083?auto=format&fit=crop&q=80&w=600",
+                desc: "خاصة بمولدات ومحركات Cummins N14 / NT855 والرافعات الثقيلة."
+            },
+            {
+                id: "prod-6",
+                title: "طقم كاسكيت وجه رأس مرسيدس أكتيروس",
+                partno: "PG-906015",
+                eqType: "truck",
+                brand: "Phillips",
+                category: "gaskets",
+                status: "instock",
+                imgUrl: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80&w=600",
+                desc: "وجيه رأس مانعة للتسريب ذات قوة تحمل عالية لشاحنات النقل والقلابات OM501/502."
+            },
+            {
+                id: "prod-7",
+                title: "عجلة شد رول أمامي بلدوزر D6H / D6R",
+                partno: "ASI-108266",
+                eqType: "bulldozer",
+                brand: "ASI",
+                category: "undercarriage",
+                status: "instock",
+                imgUrl: "https://images.unsplash.com/photo-1590823295982-f472ce10c14b?auto=format&fit=crop&q=80&w=600",
+                desc: "عجلة شد وتوجيه الجنزير مصنعة في أمريكا وفق أعلى المواصفات القياسية."
+            },
+            {
+                id: "prod-8",
+                title: "صمام توزيع وتحكم هيدروليكي CGR",
+                partno: "CGR-709812",
+                eqType: "excavator",
+                brand: "CGR",
+                category: "hydraulic",
+                status: "custom",
+                imgUrl: "https://images.unsplash.com/photo-1612803875567-27a3c306d8bc?auto=format&fit=crop&q=80&w=600",
+                desc: "مستورد إيطالي مخصص لحفارات كاتربلر 320D لضبط ضغط الزيت بدقة عالية."
+            }
+        ];
+
+        // Load Products Data from Local Storage if available, else default
+        let productsData = JSON.parse(localStorage.getItem('canara_products_db')) || defaultProducts;
+
+        // Dictionary Translations
         const translations = {
             ar: {
                 company_name: "شركة كنارة العربية",
@@ -455,18 +900,21 @@
                 nav_about: "عن كنارة",
                 nav_vision: "رؤيتنا ورسالتنا",
                 nav_services: "خدماتنا",
+                nav_products: "المنتجات والمعدات",
                 nav_suppliers: "الموردين",
                 nav_contact: "تواصل معنا",
+                nav_admin: "لوحة الإدارة",
                 hero_title: "شركة كنارة العربية",
                 hero_subtitle: 'نشارك عملائنا <br> <span class="text-primary">تحقيق إنجازاتهم</span>',
                 hero_desc: "الوجهة الأولى والاختيار الأمثل في مجال توفير قطع غيار المعدات الثقيلة والخدمات المرتبطة بها في المنطقة.",
-                hero_btn: "اكتشف المزيد",
+                hero_btn: "عن الشركة",
+                btn_explore_catalog: "تصفح كتالوج المعدات وقطع الغيار",
                 about_badge: "نبذة عنا",
                 about_title: "عن كنارة العربية",
-                about_p1: "في عام ٢٠١٢، ولدت شركتنا في قلب المملكة العربية السعودية بالرياض، حاملة لشعلة شغف لا تنطفئ بأن تصبح الوجهة الأولى والاختيار الأمثل في مجال توفير قطع غيار المعدات الثقيلة والخدمات المرتبطة بها في المنطقة. حيث تمكننا بفضل سعينا الحثيث لبناء شبكة قوية تضم أفضل الموردين المحليين والدوليين من تقديم أفضل الخدمات والحلول لعملائنا بأعلى معايير الجودة والموثوقية.",
-                about_p2: "بفضل فريقنا المتخصص وخبراتنا العميقة، نحرص على أن نقدم لعملائنا تجربة فريدة تضمن لهم راحة البال واستمرارية أعمالهم دون أي انقطاع من خلال توفير قطع الغيار المختلفة بسرعة ودقة حسب المواصفات المطلوبة وبأسعار تنافسية.",
+                about_p1: "في عام ٢٠١٢، ولدت شركتنا في قلب المملكة العربية السعودية بالرياض، حاملة لشعلة شغف لا تنطفئ بأن تصبح الوجهة الأولى والاختيار الأمثل في مجال توفير قطع غيار المعدات الثقيلة والخدمات المرتبطة بها في المنطقة.",
+                about_p2: "بفضل فريقنا المتخصص وخبراتنا العميقة، نحرص على أن نقدم لعملائنا تجربة فريدة تضمن لهم راحة البال واستمرارية أعمالهم دون أي انقطاع من خلال توفير قطع الغيار المختلفة بسرعة ودقة.",
                 vision_title: "رؤيتنا",
-                vision_desc: "النهوض بقطاع المعدات الثقيلة ورفع كفاءته عن طريق توفير قطع الغيار اللازمة لمختلف المعدات وتوفير خدمة عملاء وخدمات صيانة على مدار الاسبوع بدقة واحترافية تتخطى توقعات العملاء.",
+                vision_desc: "النهوض بقطاع المعدات الثقيلة ورفع كفاءته عن طريق توفير قطع الغيار اللازمة لمختلف المعدات وتوفير خدمة عملاء بدقة واحترافية.",
                 mission_title: "رسالتنا",
                 mission_desc: "نسعى لبناء علاقات طويلة الأمد مع عملائنا من خلال تقديم خدمات موثوقة ومخصصة تلبي احتياجاتهم وتساهم في تحقيق رؤية المملكة ٢٠٣٠.",
                 values_title: "قـيـمـنـا",
@@ -484,17 +932,46 @@
                 services_title: "خـدمـاتـنـا",
                 services_subtitle: "تقدم شركة كنارة العربية مجموعة متنوعة من الخدمات المتكاملة لتلبية احتياجات عملائنا في قطاع المعدات الثقيلة.",
                 srv1_title: "توفير قطع غيار المعدات",
-                srv1_desc: "نتخصص في توفير قطع غيار عالية الجودة لكافة أنواع المعدات الثقيلة، حيث نحرص على توفير مجموعة واسعة من القطع من موردينا في إيطاليا وأمريكا وغيرها للحفاظ على أداء المعدات بكفاءة.",
+                srv1_desc: "نتخصص في توفير قطع غيار عالية الجودة لكافة أنواع المعدات الثقيلة، حيث نحرص على توفير مجموعة واسعة من القطع من موردينا في إيطاليا وأمريكا وغيرها.",
                 srv2_title: "مركز استقبال العملاء",
-                srv2_desc: "تمتلك شركتنا مركز استقبال عملاء مصمم لتسجيل طلبات وملاحظات ومقترحات العملاء وتوجيهها للوحدات المختصة. فريقنا المدرب يقدم الدعم لضمان تلبية جميع الاحتياجات بفعالية.",
+                srv2_desc: "تمتلك شركتنا مركز استقبال عملاء مصمم لتسجيل طلبات وملاحظات ومقترحات العملاء وتوجيهها للوحدات المختصة.",
                 srv3_title: "تجهيز القطع غير المتوفرة",
-                srv3_desc: "في حالة عدم توفر القطع المطلوبة في مخازننا، نقدم خدمة تجهيزها خصيصاً لكم. نعمل بشكل وثيق مع شبكة موردينا لضمان توفيرها في أسرع وقت ممكن لتقليل أوقات الانتظار.",
+                srv3_desc: "في حالة عدم توفر القطع المطلوبة في مخازننا، نقدم خدمة تجهيزها خصيصاً لكم بسرعة ودقة.",
                 srv4_title: "خدمات الشحن",
-                srv4_desc: "نقدم حلول شحن متكاملة وسريعة إلى مختلف مدن المملكة تضمن وصول المنتجات بأمان وفي الوقت المحدد باستخدام أحدث وسائل النقل وتتبع الشحنات.",
+                srv4_desc: "نقدم حلول شحن متكاملة وسريعة إلى مختلف مدن المملكة تضمن وصول المنتجات بأمان.",
                 srv5_title: "خدمة العملاء ومتابعة ما بعد البيع",
-                srv5_desc: "نحرص على تقديم دعم مستمر لعملائنا، بدءاً من استفسارات العملاء الأولية وحتى متابعة ما بعد البيع. يتولى فريق خدمة العملاء الإجابة على الأسئلة وحل المشاكل لضمان تجربة سلسة.",
+                srv5_desc: "نحرص على تقديم دعم مستمر لعملائنا، بدءاً من استفسارات العملاء الأولية وحتى متابعة ما بعد البيع.",
                 suppliers_title: "شركاؤنا وموردونا",
                 suppliers_subtitle: "نفخر بالتعاون مع أفضل العلامات التجارية العالمية في الصناعة",
+                
+                // Products Page Translations
+                p_badge: "المعدات وقطع الغيار الأصلية",
+                p_title: "دليل المعدات الثقيلة والمنتجات",
+                p_desc: "استخدم محرك البحث المتقدم لتصفية ورؤية قطع الغيار حسب الماركة ورقم القطعة ونوع المعدة.",
+                btn_back_home: "العودة للرئيسية",
+                filter_eq_type: "نوع المعدة",
+                opt_all_eq: "جميع المعدات",
+                opt_excavator: "حفارات (Excavators)",
+                opt_bulldozer: "بلدوزرات (Bulldozers)",
+                opt_loader: "شيولات (Wheel Loaders)",
+                opt_truck: "شاحنات وقلابات (Trucks)",
+                opt_crane: "رافعات ومولدات (Cranes/Generators)",
+                filter_brand: "الماركة / المورد",
+                opt_all_brands: "جميع الماركات العالمية",
+                filter_cat: "تصنيف القطعة",
+                opt_all_cats: "كافة التصنيفات",
+                opt_cat_engine: "أجزاء المحركات (Engine Parts)",
+                opt_cat_hydraulic: "النظام الهيدروليكي (Hydraulics)",
+                opt_cat_under: "الجنازير والتعليق (Undercarriage)",
+                opt_cat_gasket: "وجيه وطقم أختام (Gaskets & Seals)",
+                btn_reset_filters: "إعادة ضبط",
+                search_results_found: "تم العثور على:",
+                parts_item_label: "قطعة غيار مطابقة",
+                btn_request_quote: "طلب تسعير مباشر",
+                no_res_title: "لم نجد نتائج مطابقة لجهد بحثك",
+                no_res_desc: "يمكننا توفير أي قطعة غير متوفرة في القائمة مباشرة عبر خدمة التجهيز الخاص بمساعدة فريقنا المباشر.",
+                btn_req_unlisted: "طلب توفير قطعة غير مدرجة",
+                
                 footer_desc: "الوجهة الأولى والاختيار الأمثل في مجال توفير قطع غيار المعدات الثقيلة والخدمات المرتبطة بها في المملكة العربية السعودية.",
                 footer_links_title: "روابط سريعة",
                 footer_link_about: "عن الشركة",
@@ -514,47 +991,78 @@
                 nav_about: "About Us",
                 nav_vision: "Vision & Mission",
                 nav_services: "Services",
+                nav_products: "Products & Equipment",
                 nav_suppliers: "Suppliers",
                 nav_contact: "Contact Us",
+                nav_admin: "Admin Portal",
                 hero_title: "Canara Arabia Company",
                 hero_subtitle: 'Partnering With Our Clients <br> <span class="text-primary">To Achieve Their Success</span>',
                 hero_desc: "The premier destination and ultimate choice for heavy equipment spare parts and related services in the region.",
-                hero_btn: "Discover More",
+                hero_btn: "About Us",
+                btn_explore_catalog: "Explore Equipment & Parts Catalog",
                 about_badge: "About Us",
                 about_title: "About Canara Arabia",
-                about_p1: "In 2012, our company was founded in the heart of Riyadh, Kingdom of Saudi Arabia, driven by an unyielding passion to become the premier destination and ultimate choice in providing heavy equipment spare parts and related services in the region. Through our continuous efforts to build a strong network of top local and international suppliers, we deliver the best services and solutions with the highest standards of quality and reliability.",
-                about_p2: "Thanks to our specialized team and deep expertise, we ensure our clients enjoy a unique experience that guarantees peace of mind and business continuity without interruption by providing accurate spare parts promptly according to required specifications and competitive prices.",
+                about_p1: "In 2012, our company was founded in the heart of Riyadh, Kingdom of Saudi Arabia, driven by an unyielding passion to become the premier destination in providing heavy equipment spare parts.",
+                about_p2: "Thanks to our specialized team, we ensure our clients enjoy a unique experience that guarantees peace of mind and business continuity without interruption.",
                 vision_title: "Our Vision",
-                vision_desc: "Advancing the heavy equipment sector and raising its efficiency by providing necessary spare parts for various equipment, along with round-the-clock customer service and maintenance with precision and professionalism that exceed client expectations.",
+                vision_desc: "Advancing the heavy equipment sector and raising its efficiency by providing necessary spare parts with precision and professionalism.",
                 mission_title: "Our Mission",
-                mission_desc: "We strive to build long-term relationships with our clients by delivering reliable and customized services that meet their needs and contribute to achieving Saudi Vision 2030.",
+                mission_desc: "We strive to build long-term relationships with our clients by delivering reliable services aligned with Saudi Vision 2030.",
                 values_title: "Our Values",
                 val1_title: "Quality & Excellence",
-                val1_desc: "Delivering the highest levels of quality to ensure client satisfaction and business continuity.",
+                val1_desc: "Delivering the highest levels of quality to ensure client satisfaction.",
                 val2_title: "Innovation",
-                val2_desc: "Providing advanced solutions that meet market needs and exceed expectations.",
+                val2_desc: "Providing advanced solutions that meet market needs.",
                 val3_title: "Trust & Transparency",
-                val3_desc: "Building relationships based on mutual trust, honesty, and complete transparency.",
+                val3_desc: "Building relationships based on mutual trust and complete transparency.",
                 val4_title: "Strong Partnerships",
-                val4_desc: "Fostering fruitful cooperation with suppliers and clients, believing that success is built together.",
+                val4_desc: "Fostering fruitful cooperation with suppliers and clients.",
                 val5_title: "Dedication & Commitment",
-                val5_desc: "Committed to delivering top services and focusing on meeting client needs swiftly.",
+                val5_desc: "Committed to delivering top services swiftly.",
                 services_badge: "What We Offer",
                 services_title: "Our Services",
-                services_subtitle: "Canara Arabia offers a diverse range of integrated services to meet our clients' needs in the heavy equipment sector.",
+                services_subtitle: "Canara Arabia offers integrated services to meet your heavy equipment needs.",
                 srv1_title: "Equipment Spare Parts Supply",
-                srv1_desc: "We specialize in supplying high-quality spare parts for all types of heavy equipment, sourcing a wide range of parts from trusted suppliers in Italy, America, and beyond to maintain efficient equipment performance.",
+                srv1_desc: "We specialize in supplying high-quality spare parts for all heavy equipment types from Italy, USA, and beyond.",
                 srv2_title: "Customer Reception Center",
-                srv2_desc: "Our company features a dedicated customer reception center designed to record inquiries, feedback, and proposals and direct them to specialized units. Our trained team offers support to fulfill all needs effectively.",
+                srv2_desc: "Our reception center is designed to record inquiries and route them effectively.",
                 srv3_title: "Sourcing Out-of-Stock Parts",
-                srv3_desc: "If required parts are not available in our warehouses, we provide custom sourcing services. We work closely with our supplier network to ensure prompt delivery and minimize downtime.",
+                srv3_desc: "If parts are not in stock, we custom-source them rapidly through our supplier network.",
                 srv4_title: "Shipping Services",
-                srv4_desc: "We offer integrated and fast shipping solutions to various cities across the Kingdom, ensuring safe and timely delivery using modern transport and shipment tracking.",
+                srv4_desc: "Fast, safe shipping solutions across all cities in Saudi Arabia.",
                 srv5_title: "Customer Service & After-Sales",
-                srv5_desc: "We are committed to providing continuous support to our clients, from initial inquiries to after-sales follow-up. Our customer service team handles queries and resolves issues to ensure a seamless experience.",
+                srv5_desc: "Continuous support from initial inquiries to after-sales follow-up.",
                 suppliers_title: "Our Partners & Suppliers",
-                suppliers_subtitle: "We take pride in cooperating with the world's best industry brands",
-                footer_desc: "The premier destination and ultimate choice for heavy equipment spare parts and related services in the Kingdom of Saudi Arabia.",
+                suppliers_subtitle: "We take pride in cooperating with world-leading brands",
+                
+                p_badge: "Genuine Equipment & Spare Parts",
+                p_title: "Heavy Equipment & Parts Catalog",
+                p_desc: "Use our smart search and filters to find spare parts by part number, brand, or equipment type.",
+                btn_back_home: "Back to Home",
+                filter_eq_type: "Equipment Type",
+                opt_all_eq: "All Equipment",
+                opt_excavator: "Excavators",
+                opt_bulldozer: "Bulldozers",
+                opt_loader: "Wheel Loaders",
+                opt_truck: "Trucks & Haulers",
+                opt_crane: "Cranes & Generators",
+                filter_brand: "Brand / Manufacturer",
+                opt_all_brands: "All Brands",
+                filter_cat: "Part Category",
+                opt_all_cats: "All Categories",
+                opt_cat_engine: "Engine Parts",
+                opt_cat_hydraulic: "Hydraulics",
+                opt_cat_under: "Undercarriage & Tracks",
+                opt_cat_gasket: "Gaskets & Seals",
+                btn_reset_filters: "Reset Filters",
+                search_results_found: "Results found:",
+                parts_item_label: "matching spare parts",
+                btn_request_quote: "Request Fast Quote",
+                no_res_title: "No spare parts matched your search",
+                no_res_desc: "We can source unlisted parts directly through our custom sourcing service with our team's support.",
+                btn_req_unlisted: "Request Unlisted Part Sourcing",
+                
+                footer_desc: "The premier destination and ultimate choice for heavy equipment spare parts and related services in Saudi Arabia.",
                 footer_links_title: "Quick Links",
                 footer_link_about: "About Company",
                 footer_link_vision: "Vision & Mission",
@@ -570,19 +1078,349 @@
         };
 
         let currentLang = 'ar';
+        let isAdminLoggedIn = false;
+
+        function renderProducts() {
+            const grid = document.getElementById('productsGrid');
+            grid.innerHTML = '';
+
+            productsData.forEach(item => {
+                const statusBadge = item.status === 'instock' 
+                    ? `<span class="absolute bottom-3 right-3 bg-green-600 text-white font-bold text-[10px] px-2 py-0.5 rounded">متوفر بالمخزن</span>`
+                    : `<span class="absolute bottom-3 right-3 bg-blue-600 text-white font-bold text-[10px] px-2 py-0.5 rounded">طلب خاص / توريد</span>`;
+
+                const fallbackImg = "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=600";
+                const imgSrc = item.imgUrl || fallbackImg;
+
+                const cardHtml = `
+                    <div class="product-item bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all overflow-hidden flex flex-col justify-between"
+                         data-eq="${item.eqType}" data-brand="${item.brand}" data-cat="${item.category}" data-title="${item.title}" data-partno="${item.partno}">
+                        <div>
+                            <div class="relative h-48 bg-gray-100 overflow-hidden">
+                                <img src="${imgSrc}" alt="${item.title}" class="w-full h-full object-cover" onerror="this.src='${fallbackImg}'">
+                                <span class="absolute top-3 right-3 bg-secondary text-primary font-bold text-xs px-2.5 py-1 rounded-full shadow">${item.brand}</span>
+                                ${statusBadge}
+                            </div>
+                            <div class="p-5">
+                                <div class="text-xs font-bold text-primary mb-1 uppercase tracking-wider">${item.brand} • P/N: ${item.partno}</div>
+                                <h4 class="font-extrabold text-lg text-secondary mb-2">${item.title}</h4>
+                                <p class="text-xs text-gray-500 mb-3">${item.desc || 'قطع غيار عالية الجودة مطابقة للمواصفات القياسية.'}</p>
+                                
+                                <div class="bg-gray-50 p-2.5 rounded-lg text-xs space-y-1 font-mono text-gray-700 mb-4">
+                                    <div><strong class="font-sans">رقم القطعة:</strong> P/N: ${item.partno}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-5 pt-0">
+                            <button onclick="requestPartQuote('${item.partno}', '${item.title}')" class="w-full bg-primary hover:bg-yellow-500 text-secondary font-bold py-2.5 px-4 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm shadow">
+                                <i class="fab fa-whatsapp text-base"></i> <span data-i18n="btn_request_quote">طلب تسعير مباشر</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                grid.insertAdjacentHTML('beforeend', cardHtml);
+            });
+
+            applyFilters();
+            renderAdminTable();
+        }
+
+        function renderAdminTable() {
+            const tableBody = document.getElementById('adminProductsTableBody');
+            if (!tableBody) return;
+
+            tableBody.innerHTML = '';
+
+            let inStockCount = 0;
+            let customCount = 0;
+
+            productsData.forEach((item, index) => {
+                if (item.status === 'instock') inStockCount++;
+                else customCount++;
+
+                const statusLabel = item.status === 'instock'
+                    ? `<span class="bg-green-100 text-green-700 font-bold px-2.5 py-1 rounded-full text-xs">متوفر</span>`
+                    : `<span class="bg-blue-100 text-blue-700 font-bold px-2.5 py-1 rounded-full text-xs">طلب خاص</span>`;
+
+                const row = `
+                    <tr class="hover:bg-gray-50 admin-table-row" data-search="${item.title.toLowerCase()} ${item.partno.toLowerCase()}">
+                        <td class="p-4 flex items-center gap-3">
+                            <img src="${item.imgUrl || 'https://placehold.co/100'}" class="w-10 h-10 object-cover rounded-lg border" onerror="this.src='https://placehold.co/100'">
+                            <div>
+                                <h5 class="font-bold text-secondary text-sm">${item.title}</h5>
+                                <span class="text-xs text-gray-400 font-normal">${item.desc ? item.desc.substring(0, 35) + '...' : ''}</span>
+                            </div>
+                        </td>
+                        <td class="p-4 font-mono font-bold text-primary">${item.partno}</td>
+                        <td class="p-4">
+                            <div class="text-xs font-bold text-gray-800">${item.eqType.toUpperCase()}</div>
+                            <div class="text-xs text-gray-500">${item.brand}</div>
+                        </td>
+                        <td class="p-4 text-xs font-semibold text-gray-600">${item.category}</td>
+                        <td class="p-4">${statusLabel}</td>
+                        <td class="p-4 text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <button onclick="editProduct('${item.id}')" class="bg-gray-200 hover:bg-primary text-secondary w-8 h-8 rounded-lg flex items-center justify-center transition-all" title="تعديل">
+                                    <i class="fas fa-edit text-xs"></i>
+                                </button>
+                                <button onclick="deleteProduct('${item.id}')" class="bg-red-100 hover:bg-red-600 text-red-600 hover:text-white w-8 h-8 rounded-lg flex items-center justify-center transition-all" title="حذف">
+                                    <i class="fas fa-trash-alt text-xs"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                tableBody.insertAdjacentHTML('beforeend', row);
+            });
+
+            // Update stats
+            document.getElementById('statTotalProducts').innerText = productsData.length;
+            document.getElementById('statInStock').innerText = inStockCount;
+            document.getElementById('statOnOrder').innerText = customCount;
+        }
+
+        function filterAdminTable() {
+            const query = document.getElementById('adminSearchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('.admin-table-row');
+            rows.forEach(row => {
+                const text = row.getAttribute('data-search');
+                if (text.includes(query)) {
+                    row.classList.remove('hidden');
+                } else {
+                    row.classList.add('hidden');
+                }
+            });
+        }
+
+        function openAdminLoginModal() {
+            if (isAdminLoggedIn) {
+                navigateTo('admin');
+            } else {
+                document.getElementById('adminLoginModal').classList.remove('hidden');
+            }
+        }
+
+        function closeAdminLoginModal() {
+            document.getElementById('adminLoginModal').classList.add('hidden');
+            document.getElementById('loginErrorMsg').classList.add('hidden');
+        }
+
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            const passcode = document.getElementById('adminPasscode').value;
+            // Default passcode: 0551691499
+            if (passcode === '0551691499') {
+                isAdminLoggedIn = true;
+                closeAdminLoginModal();
+                showToast('مرحباً بك! تم الدخول للوحة إدارة المنتجات');
+                navigateTo('admin');
+            } else {
+                document.getElementById('loginErrorMsg').classList.remove('hidden');
+            }
+        }
+
+        function navigateTo(view, sectionId = null) {
+            const homeView = document.getElementById('home-view');
+            const productsView = document.getElementById('products-page-view');
+            const adminView = document.getElementById('admin-view');
+
+            homeView.classList.add('hidden');
+            productsView.classList.add('hidden');
+            adminView.classList.add('hidden');
+
+            if (view === 'products') {
+                productsView.classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else if (view === 'admin') {
+                if (!isAdminLoggedIn) {
+                    openAdminLoginModal();
+                    return;
+                }
+                adminView.classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                homeView.classList.remove('hidden');
+                if (sectionId) {
+                    setTimeout(() => {
+                        const target = document.getElementById(sectionId);
+                        if (target) {
+                            target.scrollIntoView({ behavior: 'smooth' });
+                        }
+                    }, 50);
+                } else {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            }
+        }
+
+        function openProductModal(isEdit = false) {
+            const modal = document.getElementById('productFormModal');
+            modal.classList.remove('hidden');
+            if (!isEdit) {
+                document.getElementById('modalTitle').innerHTML = '<i class="fas fa-plus-circle text-primary"></i> إضافة قطعة غيار جديدة';
+                document.getElementById('productForm').reset();
+                document.getElementById('editProductId').value = '';
+            }
+        }
+
+        function closeProductModal() {
+            document.getElementById('productFormModal').classList.add('hidden');
+        }
+
+        function saveProduct(e) {
+            e.preventDefault();
+            const editId = document.getElementById('editProductId').value;
+            
+            const pObj = {
+                id: editId ? editId : 'prod-' + Date.now(),
+                title: document.getElementById('pTitle').value,
+                partno: document.getElementById('pPartNo').value,
+                eqType: document.getElementById('pEqType').value,
+                brand: document.getElementById('pBrand').value,
+                category: document.getElementById('pCategory').value,
+                status: document.getElementById('pStatus').value,
+                imgUrl: document.getElementById('pImgUrl').value || 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=600',
+                desc: document.getElementById('pDesc').value
+            };
+
+            if (editId) {
+                // Update existing product
+                const index = productsData.findIndex(item => item.id === editId);
+                if (index !== -1) {
+                    productsData[index] = pObj;
+                    showToast('تم تعديل بيانات القطعة بنجاح');
+                }
+            } else {
+                // Add new product
+                productsData.unshift(pObj);
+                showToast('تم إضافة القطعة الجديدة بنجاح للكتالوج');
+            }
+
+            // Save to local storage
+            localStorage.setItem('canara_products_db', JSON.stringify(productsData));
+            
+            closeProductModal();
+            renderProducts();
+        }
+
+        function editProduct(id) {
+            const item = productsData.find(p => p.id === id);
+            if (!item) return;
+
+            document.getElementById('editProductId').value = item.id;
+            document.getElementById('pTitle').value = item.title;
+            document.getElementById('pPartNo').value = item.partno;
+            document.getElementById('pEqType').value = item.eqType;
+            document.getElementById('pBrand').value = item.brand;
+            document.getElementById('pCategory').value = item.category;
+            document.getElementById('pStatus').value = item.status;
+            document.getElementById('pImgUrl').value = item.imgUrl || '';
+            document.getElementById('pDesc').value = item.desc || '';
+
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit text-primary"></i> تعديل بيانات قطعة الغيار';
+            openProductModal(true);
+        }
+
+        function deleteProduct(id) {
+            // Confirmation modal replacement (custom toast/modal)
+            if (window.confirm ? confirm("هل أنت تأكد من رغبتك في حذف هذه القطعة من الكتالوج؟") : true) {
+                productsData = productsData.filter(p => p.id !== id);
+                localStorage.setItem('canara_products_db', JSON.stringify(productsData));
+                renderProducts();
+                showToast('تم حذف القطعة من الكتالوج');
+            }
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toastBox');
+            document.getElementById('toastMsg').innerText = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        // Search and Filters Logic
+        function applyFilters() {
+            const searchInput = document.getElementById('searchInput');
+            if (!searchInput) return;
+
+            const searchText = searchInput.value.trim().toLowerCase();
+            const eqType = document.getElementById('eqFilter').value;
+            const brand = document.getElementById('brandFilter').value;
+            const cat = document.getElementById('catFilter').value;
+
+            const items = document.querySelectorAll('.product-item');
+            let visibleCount = 0;
+
+            const clearBtn = document.getElementById('clearSearchBtn');
+            if (searchText.length > 0) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+            }
+
+            items.forEach(item => {
+                const itemEq = item.getAttribute('data-eq');
+                const itemBrand = item.getAttribute('data-brand');
+                const itemCat = item.getAttribute('data-cat');
+                const itemTitle = item.getAttribute('data-title').toLowerCase();
+                const itemPartNo = item.getAttribute('data-partno').toLowerCase();
+
+                const matchesSearch = !searchText || itemTitle.includes(searchText) || itemPartNo.includes(searchText);
+                const matchesEq = (eqType === 'all') || (itemEq === eqType);
+                const matchesBrand = (brand === 'all') || (itemBrand === brand);
+                const matchesCat = (cat === 'all') || (itemCat === cat);
+
+                if (matchesSearch && matchesEq && matchesBrand && matchesCat) {
+                    item.classList.remove('hidden');
+                    visibleCount++;
+                } else {
+                    item.classList.add('hidden');
+                }
+            });
+
+            document.getElementById('resultsCount').innerText = visibleCount;
+            const noResults = document.getElementById('noResultsMsg');
+            if (visibleCount === 0) {
+                noResults.classList.remove('hidden');
+            } else {
+                noResults.classList.add('hidden');
+            }
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            applyFilters();
+        }
+
+        function resetAllFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('eqFilter').value = 'all';
+            document.getElementById('brandFilter').value = 'all';
+            document.getElementById('catFilter').value = 'all';
+            applyFilters();
+        }
+
+        function requestPartQuote(partNo, partName) {
+            const msg = encodeURIComponent(`السلام عليكم شركة كنارة العربية، أود الاستفسار وطلب تسعير لقطع غيار المعدات:\nاسم القطعة: ${partName}\nرقم القطعة P/N: ${partNo}`);
+            window.open(`https://wa.me/966567618315?text=${msg}`, '_blank');
+        }
+
+        function requestCustomPart() {
+            const msg = encodeURIComponent(`السلام عليكم شركة كنارة العربية، يرجي التواصل معي لطلب توفير قطعة غير مدرجة للمعدات الثقيلة.`);
+            window.open(`https://wa.me/966567618315?text=${msg}`, '_blank');
+        }
 
         function toggleLanguage() {
             currentLang = currentLang === 'ar' ? 'en' : 'ar';
             
-            // Update document attributes
             document.documentElement.setAttribute('lang', currentLang);
             document.documentElement.setAttribute('dir', currentLang === 'ar' ? 'rtl' : 'ltr');
             
-            // Update button texts
             document.getElementById('langBtnText').innerText = currentLang === 'ar' ? 'EN' : 'AR';
             document.getElementById('langBtnTextMobile').innerText = currentLang === 'ar' ? 'EN' : 'AR';
             
-            // Translate all elements with data-i18n attribute
             const elements = document.querySelectorAll('[data-i18n]');
             elements.forEach(el => {
                 const key = el.getAttribute('data-i18n');
@@ -592,13 +1430,11 @@
             });
         }
 
-        // Mobile menu toggle
         function toggleMenu() {
             const menu = document.getElementById('mobileMenu');
             menu.classList.toggle('hidden');
         }
 
-        // Change navbar appearance on scroll
         window.addEventListener('scroll', function() {
             const navbar = document.getElementById('navbar');
             if (window.scrollY > 50) {
@@ -609,6 +1445,11 @@
                 navbar.classList.remove('py-2', 'shadow-md');
             }
         });
+
+        // Initialize products on load
+        window.onload = function() {
+            renderProducts();
+        };
     </script>
 </body>
 </html>
