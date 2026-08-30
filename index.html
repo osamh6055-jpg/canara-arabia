@@ -914,14 +914,14 @@
                         </div>
 
                         {/* Arabic Title */}
-                        <h4 className="font-extrabold text-base md:text-lg text-[#1E1E1E] mb-1 leading-snug">{item.title}</h4>
+                        <h4 className="font-extrabold text-base md:text-lg text-[#1E1E1E] leading-snug">{item.title}</h4>
                         
-                        {/* English Title */}
+                        {/* English Title - Font Size Increased to match Arabic prominence */}
                         {item.title_en && (
-                          <h5 className="font-semibold text-xs text-gray-500 mb-3 tracking-wide" dir="ltr">{item.title_en}</h5>
+                          <h5 className="font-extrabold text-base text-gray-700 mt-1 mb-3 pt-1 border-t border-gray-100 leading-snug" dir="ltr">{item.title_en}</h5>
                         )}
 
-                        <p className="text-xs text-gray-500 mb-4">{item.description || t('status_instock')}</p>
+                        <p className="text-xs text-gray-500 mb-4 mt-2">{item.description || t('status_instock')}</p>
                         
                         <div className="bg-[#1E1E1E] text-white p-3 rounded-xl text-sm space-y-1 font-mono mb-4 border border-[#F4B41A]/40 shadow-inner flex items-center justify-between">
                           <span className="text-[#F4B41A] text-xs uppercase font-bold tracking-wider">Part #:</span>
@@ -1220,7 +1220,7 @@
                               </div>
                             </div>
                           </td>
-                          <td className="p-4 font-semibold text-gray-800 text-xs" dir="ltr">{item.title_en || '-'}</td>
+                          <td className="p-4 font-bold text-gray-800 text-sm" dir="ltr">{item.title_en || '-'}</td>
                           <td className="p-4 font-mono font-bold text-[#1E1E1E]">{item.partno}</td>
                           <td className="p-4">
                             <div className="text-xs font-bold text-gray-800 uppercase mb-1">{item.eq_type}</div>
