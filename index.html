@@ -887,11 +887,12 @@
                       </div>
 
                       <div className="p-5">
-                        <div className="text-xs font-bold text-[#F4B41A] bg-[#1E1E1E] px-2 py-0.5 rounded inline-block mb-1 uppercase tracking-wider">{item.brand} • P/N: {item.partno}</div>
+                        <div className="text-xs font-bold text-[#F4B41A] bg-[#1E1E1E] px-2 py-0.5 rounded inline-block mb-2 uppercase tracking-wider">{item.brand}</div>
                         <h4 className="font-extrabold text-lg text-[#1E1E1E] mb-2">{item.title}</h4>
-                        <p className="text-xs text-gray-500 mb-3">{item.description || t('status_instock')}</p>
-                        <div className="bg-gray-50 p-2.5 rounded-lg text-xs space-y-1 font-mono text-gray-700 mb-4 border">
-                          <div><strong className="font-sans">P/N:</strong> {item.partno}</div>
+                        <p className="text-xs text-gray-500 mb-4">{item.description || t('status_instock')}</p>
+                        <div className="bg-[#1E1E1E] text-white p-3 rounded-xl text-sm space-y-1 font-mono mb-4 border border-[#F4B41A]/40 shadow-inner flex items-center justify-between">
+                          <span className="text-[#F4B41A] text-xs uppercase font-bold tracking-wider">Part #:</span>
+                          <span className="text-lg md:text-xl font-extrabold text-white tracking-wide" dir="ltr">{item.partno}</span>
                         </div>
                       </div>
                     </div>
