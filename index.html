@@ -287,6 +287,20 @@
       { src: "https://i.postimg.cc/x8JWcwZb/syncpart-construction.jpg", alt: "SYNCPART", fallback: "SYNCPART" }
     ];
 
+    const brandLogos = {
+      'CGR': 'https://i.postimg.cc/cCFDhQQn/cgr-ghinassi-png.jpg',
+      'ITR': 'https://i.ibb.co/fdSgdX53/itr-png.png',
+      'BULLDOG': 'https://i.ibb.co/v4WMNTkf/bulldog-png.jpg',
+      'Bulldog': 'https://i.ibb.co/v4WMNTkf/bulldog-png.jpg',
+      'FP': 'https://i.ibb.co/rS3zWgS/fp-diesel-png.png',
+      'FP Diesel': 'https://i.ibb.co/rS3zWgS/fp-diesel-png.png',
+      'AZ': 'https://i.postimg.cc/28596KYp/asi-usa-png.jpg',
+      'ASI': 'https://i.postimg.cc/28596KYp/asi-usa-png.jpg',
+      'PHILIPS': 'https://i.postimg.cc/pXDQPQ9f/phillips-gasket-png.jpg',
+      'Phillips': 'https://i.postimg.cc/pXDQPQ9f/phillips-gasket-png.jpg',
+      'SYNCPART': 'https://i.postimg.cc/x8JWcwZb/syncpart-construction.jpg'
+    };
+
     const companyValues = [
       { num: "01", titleKey: "val1_title", descKey: "val1_desc" },
       { num: "02", titleKey: "val2_title", descKey: "val2_desc" },
@@ -662,8 +676,8 @@
                     <img
                       src={sup.src}
                       alt={sup.alt}
-                      className="max-w-[85%] max-h-[85%] object-contain transition-transform duration-300 group-hover:scale-110"
-                      onError={(e) => { e.target.src = `https://placehold.co/300x150/1E1E1E/F4B41A?text=${sup.fallback}`; }}
+                      className="max-w-[85%] max-h-[85%] object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-110"
+                      onError={(e) => { e.target.src = `https://placehold.co/300x150/ffffff/1E1E1E?text=${sup.fallback}`; }}
                     />
                   </div>
                 ))}
@@ -752,8 +766,8 @@
                       <img
                         src={url}
                         alt={name}
-                        className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
-                        onError={(e) => { e.target.src = `https://placehold.co/200x100/1E1E1E/F4B41A?text=${name}`; }}
+                        className="max-h-full max-w-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105"
+                        onError={(e) => { e.target.src = `https://placehold.co/200x100/ffffff/1E1E1E?text=${name}`; }}
                       />
                     </div>
                   </div>
@@ -880,14 +894,21 @@
                           className="w-full h-full object-cover"
                           onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=600'; }}
                         />
-                        <span className="absolute top-3 right-3 bg-[#1E1E1E] text-[#F4B41A] font-bold text-xs px-2.5 py-1 rounded-full shadow border border-[#F4B41A]/40">{item.brand}</span>
-                        <span className={`absolute bottom-3 right-3 ${item.status === 'instock' ? 'bg-green-600' : 'bg-blue-600'} text-white font-bold text-[10px] px-2 py-0.5 rounded`}>
+                        <span className={`absolute bottom-3 right-3 ${item.status === 'instock' ? 'bg-green-600' : 'bg-blue-600'} text-white font-bold text-[10px] px-2 py-0.5 rounded shadow`}>
                           {item.status === 'instock' ? t('status_instock') : t('status_custom')}
                         </span>
                       </div>
 
                       <div className="p-5">
-                        <div className="text-xs font-bold text-[#F4B41A] bg-[#1E1E1E] px-2 py-0.5 rounded inline-block mb-2 uppercase tracking-wider">{item.brand}</div>
+                        {/* Brand Logo Picture prominently placed directly above the part name with clean pure background */}
+                        <div className="h-9 bg-white border border-[#F4B41A]/30 rounded-lg px-3 py-1 inline-flex items-center justify-center mb-3 shadow-sm">
+                          <img
+                            src={brandLogos[item.brand] || `https://placehold.co/100x40/ffffff/1E1E1E?text=${item.brand}`}
+                            alt={item.brand}
+                            className="max-h-7 max-w-[100px] object-contain mix-blend-multiply"
+                            onError={(e) => { e.target.src = `https://placehold.co/100x40/ffffff/1E1E1E?text=${item.brand}`; }}
+                          />
+                        </div>
                         <h4 className="font-extrabold text-lg text-[#1E1E1E] mb-2">{item.title}</h4>
                         <p className="text-xs text-gray-500 mb-4">{item.description || t('status_instock')}</p>
                         <div className="bg-[#1E1E1E] text-white p-3 rounded-xl text-sm space-y-1 font-mono mb-4 border border-[#F4B41A]/40 shadow-inner flex items-center justify-between">
@@ -927,11 +948,11 @@
         id: '', title: '', partno: '', eq_type: 'CATERPILLAR', brand: 'CGR', category: 'engine', status: 'instock', img_url: '', description: ''
       });
       const [saving, setSaving] = useState(false);
-      const [toast, setToast] = useState({ msg: '', show: false });
+      const [toast, setToast] = useState({ msg: '', show: false, isError: false });
 
-      const showToast = (msg) => {
-        setToast({ msg, show: true });
-        setTimeout(() => setToast({ msg: '', show: false }), 3000);
+      const showToast = (msg, isError = false) => {
+        setToast({ msg, show: true, isError });
+        setTimeout(() => setToast({ msg: '', show: false, isError: false }), 3500);
       };
 
       const loadData = useCallback(() => {
@@ -980,6 +1001,22 @@
         e.preventDefault();
         setSaving(true);
         try {
+          const cleanPartNo = currentPart.partno.trim().toLowerCase();
+          const cleanBrand = currentPart.brand.trim().toLowerCase();
+
+          // Check if same Part Number and Brand already exist (excluding current part if editing)
+          const isDuplicate = products.some((p) => 
+            p.id !== currentPart.id && 
+            p.partno.trim().toLowerCase() === cleanPartNo && 
+            p.brand.trim().toLowerCase() === cleanBrand
+          );
+
+          if (isDuplicate) {
+            showToast(`عذراً، رقم القطعة (${currentPart.partno}) للماركة (${currentPart.brand}) مضاف مسبقاً!`, true);
+            setSaving(false);
+            return;
+          }
+
           let updated;
           if (isEditing) {
             updated = products.map((p) => (p.id === currentPart.id ? currentPart : p));
@@ -993,7 +1030,7 @@
           localStorage.setItem('canara_products', JSON.stringify(updated));
           setModalOpen(false);
         } catch {
-          showToast('حدث خطأ أثناء الحفظ');
+          showToast('حدث خطأ أثناء الحفظ', true);
         }
         setSaving(false);
       };
@@ -1006,7 +1043,7 @@
           localStorage.setItem('canara_products', JSON.stringify(updated));
           showToast('تم حذف القطعة من الكتالوج');
         } catch {
-          showToast('حدث خطأ أثناء الحذف');
+          showToast('حدث خطأ أثناء الحذف', true);
         }
       };
 
@@ -1168,8 +1205,15 @@
                           </td>
                           <td className="p-4 font-mono font-bold text-[#1E1E1E]">{item.partno}</td>
                           <td className="p-4">
-                            <div className="text-xs font-bold text-gray-800 uppercase">{item.eq_type}</div>
-                            <div className="text-xs text-gray-500">{item.brand}</div>
+                            <div className="text-xs font-bold text-gray-800 uppercase mb-1">{item.eq_type}</div>
+                            <div className="h-6 bg-white border border-[#F4B41A]/30 rounded px-1.5 py-0.5 inline-flex items-center justify-center shadow-xs">
+                              <img
+                                src={brandLogos[item.brand] || `https://placehold.co/80x30/ffffff/1E1E1E?text=${item.brand}`}
+                                alt={item.brand}
+                                className="max-h-4 max-w-[60px] object-contain mix-blend-multiply"
+                                onError={(e) => { e.target.src = `https://placehold.co/80x30/ffffff/1E1E1E?text=${item.brand}`; }}
+                              />
+                            </div>
                           </td>
                           <td className="p-4 text-xs font-semibold text-gray-600">{item.category}</td>
                           <td className="p-4">
@@ -1352,8 +1396,8 @@
           )}
 
           {toast.show && (
-            <div className="fixed bottom-6 left-6 bg-[#1E1E1E] text-white border-2 border-[#F4B41A] px-6 py-3 rounded-xl shadow-2xl z-50 flex items-center gap-3 transition-all duration-300">
-              <i className="fas fa-check-circle text-[#F4B41A] text-xl"></i>
+            <div className={`fixed bottom-6 left-6 ${toast.isError ? 'bg-red-900 border-red-500' : 'bg-[#1E1E1E] border-[#F4B41A]'} text-white border-2 px-6 py-3 rounded-xl shadow-2xl z-50 flex items-center gap-3 transition-all duration-300`}>
+              <i className={`fas ${toast.isError ? 'fa-exclamation-triangle text-red-400' : 'fa-check-circle text-[#F4B41A]'} text-xl`}></i>
               <span className="font-bold text-sm">{toast.msg}</span>
             </div>
           )}
