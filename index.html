@@ -119,7 +119,7 @@
         opt_cat_pump: "المضخات (Pumps)",
         opt_cat_filter: "الفلاتر والمرشحات (Filters)",
         btn_reset_filters: "إعادة ضبط",
-        search_placeholder: "ابحث برقم القطعة (Part #)، اسم القطعة، أو الموديل...",
+        search_placeholder: "ابحث برقم القطعة (Part #)، اسم القطعة بالعربي أو بالإنجليزي...",
         search_results_found: "تم العثور على:",
         parts_item_label: "قطعة غيار مطابقة",
         btn_request_quote: "طلب تسعير مباشر عبر واتساب",
@@ -214,7 +214,7 @@
         opt_cat_pump: "Pumps",
         opt_cat_filter: "Filters",
         btn_reset_filters: "Reset Filters",
-        search_placeholder: "Search by Part #, part name, or model...",
+        search_placeholder: "Search by Part #, Arabic name, or English name...",
         search_results_found: "Results found:",
         parts_item_label: "matching spare parts",
         btn_request_quote: "Request Fast Quote via WhatsApp",
@@ -267,14 +267,14 @@
     }
 
     const initialProducts = [
-      { id: '1', title: 'طقم بساتم محرك كاتربيلر 3306', partno: '1N4380', eq_type: 'CATERPILLAR', brand: 'CGR', category: 'engine', status: 'instock', img_url: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&q=80&w=600', description: 'طقم بساتم أصلي عالي الجودة لمواتير الديزل الثقيلة.' },
-      { id: '2', title: 'مضخة هيدروليك رئيسية حفار كوماتسو', partno: '708-2L-00450', eq_type: 'CATERPILLAR', brand: 'ITR', category: 'pump', status: 'instock', img_url: 'https://images.unsplash.com/photo-1579912441991-84c4e7ab5083?auto=format&fit=crop&q=80&w=600', description: 'مضخة هيدروليكية ذات كفاءة عالية وضغط مستقر للحفارات.' },
-      { id: '3', title: 'جلوبال وجه رأس مكينة فولفو D13', partno: '21456892', eq_type: 'BOBCAT', brand: 'Bulldog', category: 'gaskets', status: 'instock', img_url: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80&w=600', description: 'طقم أختام ووجيه رأس محرك لضمان عدم تسريب الزيت أو الضغط.' },
-      { id: '4', title: 'جنزير حديد متكامل كاتربيلر D8R', partno: '6Y-3495', eq_type: 'CATERPILLAR', brand: 'ITR', category: 'undercarriage', status: 'instock', img_url: 'https://images.unsplash.com/photo-1541888946425-d0fbb18f86f6?auto=format&fit=crop&q=80&w=600', description: 'سلسلة جنازير معززة ومقاومة للتآكل لظروف العمل الشاقة.' },
-      { id: '5', title: 'فلتر زيت ديزل رئيسي كاتربيلر', partno: '1R-1808', eq_type: 'CATERPILLAR', brand: 'FP Diesel', category: 'filter', status: 'instock', img_url: 'https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&q=80&w=600', description: 'فلتر زيت عالي الكفاءة لحماية محركات الديزل الثقيلة من الشوائب.' },
-      { id: '6', title: 'صمام تحكم هيدروليكي جي سي بي 3DX', partno: '332/F2321', eq_type: 'JCB', brand: 'ASI', category: 'hydraulic', status: 'instock', img_url: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=600', description: 'صمام توزيع عالي الأداء لمعدات الحفر والتحميل.' },
-      { id: '7', title: 'مضخة مياه تبريد المحرك كمنز', partno: '3802358', eq_type: 'JCB', brand: 'ITR', category: 'pump', status: 'instock', img_url: 'https://images.unsplash.com/photo-1579912441991-84c4e7ab5083?auto=format&fit=crop&q=80&w=600', description: 'مضخة مياه لتبريد المحرك وضمان حرارة تشغيل مثالية.' },
-      { id: '8', title: 'فلتر هواء توربو ديترويت ميرسيدس', partno: 'A0030943904', eq_type: 'BOBCAT', brand: 'Phillips', category: 'filter', status: 'custom', img_url: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80&w=600', description: 'فلتر هواء تنقية عالية للشاحنات والمعدات الثقيلة.' }
+      { id: '1', title: 'طقم بساتم محرك كاتربيلر 3306', title_en: 'Caterpillar 3306 Engine Piston Kit', partno: '1N4380', eq_type: 'CATERPILLAR', brand: 'CGR', category: 'engine', status: 'instock', img_url: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&q=80&w=600', description: 'طقم بساتم أصلي عالي الجودة لمواتير الديزل الثقيلة.' },
+      { id: '2', title: 'مضخة هيدروليك رئيسية حفار كوماتسو', title_en: 'Komatsu Excavator Main Hydraulic Pump', partno: '708-2L-00450', eq_type: 'CATERPILLAR', brand: 'ITR', category: 'pump', status: 'instock', img_url: 'https://images.unsplash.com/photo-1579912441991-84c4e7ab5083?auto=format&fit=crop&q=80&w=600', description: 'مضخة هيدروليكية ذات كفاءة عالية وضغط مستقر للحفارات.' },
+      { id: '3', title: 'جلوبال وجه رأس مكينة فولفو D13', title_en: 'Volvo D13 Cylinder Head Gasket Set', partno: '21456892', eq_type: 'BOBCAT', brand: 'Bulldog', category: 'gaskets', status: 'instock', img_url: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80&w=600', description: 'طقم أختام ووجيه رأس محرك لضمان عدم تسريب الزيت أو الضغط.' },
+      { id: '4', title: 'جنزير حديد متكامل كاتربيلر D8R', title_en: 'Caterpillar D8R Complete Track Link Assembly', partno: '6Y-3495', eq_type: 'CATERPILLAR', brand: 'ITR', category: 'undercarriage', status: 'instock', img_url: 'https://images.unsplash.com/photo-1541888946425-d0fbb18f86f6?auto=format&fit=crop&q=80&w=600', description: 'سلسلة جنازير معززة ومقاومة للتآكل لظروف العمل الشاقة.' },
+      { id: '5', title: 'فلتر زيت ديزل رئيسي كاتربيلر', title_en: 'Caterpillar Main Diesel Oil Filter', partno: '1R-1808', eq_type: 'CATERPILLAR', brand: 'FP Diesel', category: 'filter', status: 'instock', img_url: 'https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&q=80&w=600', description: 'فلتر زيت عالي الكفاءة لحماية محركات الديزل الثقيلة من الشوائب.' },
+      { id: '6', title: 'صمام تحكم هيدروليكي جي سي بي 3DX', title_en: 'JCB 3DX Hydraulic Control Valve', partno: '332/F2321', eq_type: 'JCB', brand: 'ASI', category: 'hydraulic', status: 'instock', img_url: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=600', description: 'صمام توزيع عالي الأداء لمعدات الحفر والتحميل.' },
+      { id: '7', title: 'مضخة مياه تبريد المحرك كمنز', title_en: 'Cummins Engine Cooling Water Pump', partno: '3802358', eq_type: 'JCB', brand: 'ITR', category: 'pump', status: 'instock', img_url: 'https://images.unsplash.com/photo-1579912441991-84c4e7ab5083?auto=format&fit=crop&q=80&w=600', description: 'مضخة مياه لتبريد المحرك وضمان حرارة تشغيل مثالية.' },
+      { id: '8', title: 'فلتر هواء توربو ديترويت ميرسيدس', title_en: 'Detroit / Mercedes Turbo Air Filter', partno: 'A0030943904', eq_type: 'BOBCAT', brand: 'Phillips', category: 'filter', status: 'custom', img_url: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80&w=600', description: 'فلتر هواء تنقية عالية للشاحنات والمعدات الثقيلة.' }
     ];
 
     const suppliersList = [
@@ -717,9 +717,11 @@
         const matchEq = eqFilter === 'all' || p.eq_type === eqFilter;
         const matchBrand = brandFilter === 'all' || p.brand === brandFilter;
         const matchCat = catFilter === 'all' || p.category === catFilter;
+        const q = searchQuery.toLowerCase();
         const matchSearch = searchQuery === '' || 
-          p.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-          p.partno.toLowerCase().includes(searchQuery.toLowerCase());
+          p.title.toLowerCase().includes(q) || 
+          (p.title_en && p.title_en.toLowerCase().includes(q)) ||
+          p.partno.toLowerCase().includes(q);
         return matchEq && matchBrand && matchCat && matchSearch;
       });
 
@@ -730,8 +732,9 @@
         setSearchQuery('');
       };
 
-      const requestQuote = (partno, title) => {
-        const msg = encodeURIComponent(`السلام عليكم شركة كنارة العربية، أود الاستفسار وطلب تسعير لقطع غيار المعدات:\nاسم القطعة: ${title}\nرقم القطعة P/N: ${partno}`);
+      const requestQuote = (partno, title, title_en) => {
+        const titleStr = title_en ? `${title} / ${title_en}` : title;
+        const msg = encodeURIComponent(`السلام عليكم شركة كنارة العربية، أود الاستفسار وطلب تسعير لقطع غيار المعدات:\nاسم القطعة: ${titleStr}\nرقم القطعة P/N: ${partno}`);
         window.open(`https://wa.me/966567618315?text=${msg}`, '_blank');
       };
 
@@ -900,7 +903,7 @@
                       </div>
 
                       <div className="p-5">
-                        {/* Brand Logo Picture prominently placed directly above the part name with clean pure background */}
+                        {/* Brand Logo Picture */}
                         <div className="h-9 bg-white border border-[#F4B41A]/30 rounded-lg px-3 py-1 inline-flex items-center justify-center mb-3 shadow-sm">
                           <img
                             src={brandLogos[item.brand] || `https://placehold.co/100x40/ffffff/1E1E1E?text=${item.brand}`}
@@ -909,8 +912,17 @@
                             onError={(e) => { e.target.src = `https://placehold.co/100x40/ffffff/1E1E1E?text=${item.brand}`; }}
                           />
                         </div>
-                        <h4 className="font-extrabold text-lg text-[#1E1E1E] mb-2">{item.title}</h4>
+
+                        {/* Arabic Title */}
+                        <h4 className="font-extrabold text-base md:text-lg text-[#1E1E1E] mb-1 leading-snug">{item.title}</h4>
+                        
+                        {/* English Title */}
+                        {item.title_en && (
+                          <h5 className="font-semibold text-xs text-gray-500 mb-3 tracking-wide" dir="ltr">{item.title_en}</h5>
+                        )}
+
                         <p className="text-xs text-gray-500 mb-4">{item.description || t('status_instock')}</p>
+                        
                         <div className="bg-[#1E1E1E] text-white p-3 rounded-xl text-sm space-y-1 font-mono mb-4 border border-[#F4B41A]/40 shadow-inner flex items-center justify-between">
                           <span className="text-[#F4B41A] text-xs uppercase font-bold tracking-wider">Part #:</span>
                           <span className="text-lg md:text-xl font-extrabold text-white tracking-wide" dir="ltr">{item.partno}</span>
@@ -920,7 +932,7 @@
 
                     <div className="p-5 pt-0">
                       <button
-                        onClick={() => requestQuote(item.partno, item.title)}
+                        onClick={() => requestQuote(item.partno, item.title, item.title_en)}
                         className="w-full bg-[#F4B41A] hover:bg-[#e0a213] text-[#1E1E1E] font-bold py-2.5 px-4 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm shadow"
                       >
                         <i className="fab fa-whatsapp text-base"></i> {t('btn_request_quote')}
@@ -945,7 +957,7 @@
       const [modalOpen, setModalOpen] = useState(false);
       const [isEditing, setIsEditing] = useState(false);
       const [currentPart, setCurrentPart] = useState({
-        id: '', title: '', partno: '', eq_type: 'CATERPILLAR', brand: 'CGR', category: 'engine', status: 'instock', img_url: '', description: ''
+        id: '', title: '', title_en: '', partno: '', eq_type: 'CATERPILLAR', brand: 'CGR', category: 'engine', status: 'instock', img_url: '', description: ''
       });
       const [saving, setSaving] = useState(false);
       const [toast, setToast] = useState({ msg: '', show: false, isError: false });
@@ -986,13 +998,13 @@
       };
 
       const handleNew = () => {
-        setCurrentPart({ id: '', title: '', partno: '', eq_type: 'CATERPILLAR', brand: 'CGR', category: 'engine', status: 'instock', img_url: '', description: '' });
+        setCurrentPart({ id: '', title: '', title_en: '', partno: '', eq_type: 'CATERPILLAR', brand: 'CGR', category: 'engine', status: 'instock', img_url: '', description: '' });
         setIsEditing(false);
         setModalOpen(true);
       };
 
       const handleEdit = (item) => {
-        setCurrentPart({ ...item });
+        setCurrentPart({ title_en: '', ...item });
         setIsEditing(true);
         setModalOpen(true);
       };
@@ -1086,7 +1098,11 @@
 
       const inStockCount = products.filter((p) => p.status === 'instock').length;
       const customCount = products.filter((p) => p.status === 'custom').length;
-      const filtered = products.filter((p) => p.title.toLowerCase().includes(search.toLowerCase()) || p.partno.toLowerCase().includes(search.toLowerCase()));
+      const filtered = products.filter((p) => 
+        p.title.toLowerCase().includes(search.toLowerCase()) || 
+        (p.title_en && p.title_en.toLowerCase().includes(search.toLowerCase())) ||
+        p.partno.toLowerCase().includes(search.toLowerCase())
+      );
 
       return (
         <div className="pt-24 min-h-screen bg-gray-100">
@@ -1164,8 +1180,8 @@
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="تصفية برقم القطعة أو الاسم..."
-                  className="bg-white border border-gray-300 rounded-xl px-4 py-2 text-xs md:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#F4B41A] w-full md:w-72"
+                  placeholder="تصفية برقم القطعة أو الاسم بالعربي/الإنجليزي..."
+                  className="bg-white border border-gray-300 rounded-xl px-4 py-2 text-xs md:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#F4B41A] w-full md:w-80"
                 />
               </div>
 
@@ -1179,6 +1195,7 @@
                     <thead className="bg-[#1E1E1E] text-white text-xs font-bold uppercase">
                       <tr>
                         <th className="p-4">الصورة والقطعة</th>
+                        <th className="p-4">الاسم بالإنجليزية (English)</th>
                         <th className="p-4">رقم القطعة (P/N)</th>
                         <th className="p-4">المعدة والماركة</th>
                         <th className="p-4">التصنيف</th>
@@ -1203,6 +1220,7 @@
                               </div>
                             </div>
                           </td>
+                          <td className="p-4 font-semibold text-gray-800 text-xs" dir="ltr">{item.title_en || '-'}</td>
                           <td className="p-4 font-mono font-bold text-[#1E1E1E]">{item.partno}</td>
                           <td className="p-4">
                             <div className="text-xs font-bold text-gray-800 uppercase mb-1">{item.eq_type}</div>
@@ -1277,6 +1295,21 @@
                       />
                     </div>
                     <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-1">اسم القطعة (بالإنجليزي - English)</label>
+                      <input
+                        type="text"
+                        value={currentPart.title_en || ''}
+                        onChange={(e) => setCurrentPart({ ...currentPart, title_en: e.target.value })}
+                        required
+                        dir="ltr"
+                        placeholder="e.g. Caterpillar 3306 Piston Kit"
+                        className="w-full p-2.5 border border-gray-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#F4B41A] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
                       <label className="block text-xs font-bold text-gray-700 mb-1">رقم القطعة (Part Number P/N)</label>
                       <input
                         type="text"
@@ -1286,6 +1319,18 @@
                         placeholder="مثال: 1N4380"
                         className="w-full p-2.5 border border-gray-300 rounded-xl text-sm font-semibold font-mono focus:ring-2 focus:ring-[#F4B41A] focus:outline-none"
                       />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-1">حالة توفر القطعة</label>
+                      <select
+                        value={currentPart.status}
+                        onChange={(e) => setCurrentPart({ ...currentPart, status: e.target.value })}
+                        required
+                        className="w-full p-2.5 border border-gray-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#F4B41A] focus:outline-none"
+                      >
+                        <option value="instock">متوفر بالمخزن</option>
+                        <option value="custom">طلب خاص / توريد</option>
+                      </select>
                     </div>
                   </div>
 
@@ -1338,29 +1383,15 @@
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-gray-700 mb-1">حالة توفر القطعة</label>
-                      <select
-                        value={currentPart.status}
-                        onChange={(e) => setCurrentPart({ ...currentPart, status: e.target.value })}
-                        required
-                        className="w-full p-2.5 border border-gray-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#F4B41A] focus:outline-none"
-                      >
-                        <option value="instock">متوفر بالمخزن</option>
-                        <option value="custom">طلب خاص / توريد</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-gray-700 mb-1">رابط صورة القطعة (Image URL)</label>
-                      <input
-                        type="url"
-                        value={currentPart.img_url}
-                        onChange={(e) => setCurrentPart({ ...currentPart, img_url: e.target.value })}
-                        placeholder="https://..."
-                        className="w-full p-2.5 border border-gray-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#F4B41A] focus:outline-none"
-                      />
-                    </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">رابط صورة القطعة (Image URL)</label>
+                    <input
+                      type="url"
+                      value={currentPart.img_url}
+                      onChange={(e) => setCurrentPart({ ...currentPart, img_url: e.target.value })}
+                      placeholder="https://..."
+                      className="w-full p-2.5 border border-gray-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#F4B41A] focus:outline-none"
+                    />
                   </div>
 
                   <div>
