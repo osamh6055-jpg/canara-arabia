@@ -1166,17 +1166,16 @@ const handleFileUpload = (e) => {
       useEffect(() => {
         if (authed) loadData();
       }, [authed, loadData]);
-
-      const handleLogin = (e) => {
-        e.preventDefault();
-        if (passInput === '0551691499') {
-          setAuthed(true);
-          setLoginError(false);
-        } else {
-          setLoginError(true);
-        }
-      };
-
+const handleLogin = (e) => {
+    e.preventDefault();
+    if (passInput === '0551691499') {
+        setAuthed(true);
+        setLoginError(false);
+        fetchProducts(); // جلب المنتجات فور تسجيل الدخول لتظهر مباشرة
+    } else {
+        setLoginError(true);
+    }
+};
       const handleNew = () => {
         setCurrentPart({ id: '', title: '', title_en: '', partno: '', eq_type: 'CATERPILLAR', brand: 'CGR', category: 'engine', status: 'instock', img_url: '', description: '' });
         setIsEditing(false);
