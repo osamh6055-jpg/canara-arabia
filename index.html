@@ -1226,17 +1226,32 @@ const handleLogin = (e) => {
         setSaving(false);
       };
 
-      const handleDelete = (id) => {
-        if (!window.confirm('هل أنت متأكد من رغبتك في حذف هذه القطعة من الكتالوج؟')) return;
-        try {
-          const updated = products.filter((p) => p.id !== id);
-          setProducts(updated);
-          localStorage.setItem('canara_products', JSON.stringify(updated));
-          showToast('تم حذف القطعة من الكتالوج');
-        } catch {
-          showToast('حدث خطأ أثناء الحذف', true);
-        }
-      };
+      const handleDelete = async (id) => {
+    if (!window.confirm('هل أنت متأكد من رغبتك في حذف هذه القطعة من الكتالوج؟')) return;
+    try {
+        setSaving(true);
+        
+        // 1. الحذف من قاعدة بيانات Supabase
+        const { error } = await supabase
+            .from('products')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+
+        // 2. التحديث المحلي بعد النجاح في Supabase
+        const updated = products.filter((p) => p.id !== id);
+        setProducts(updated);
+        localStorage.setItem('canara_products', JSON.stringify(updated));
+        showToast('تم حذف القطعة من الكتالوج');
+    } catch (err) {
+        console.error('Delete error:', err);
+        showToast('حدث خطأ أثناء الحذف', true);
+    } finally {
+        setSaving(false);
+    }
+};
+
 
       if (!authed) {
         return (
