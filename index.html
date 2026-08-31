@@ -25,6 +25,8 @@
 
   <!-- SheetJS for Excel / CSV file parsing -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     body {
@@ -964,7 +966,64 @@
       });
       const [saving, setSaving] = useState(false);
       const [toast, setToast] = useState({ msg: '', show: false, isError: false });
+// جلب القطع من Supabase عند فتح لوحة التحكم
+    const fetchProducts = async () => {
+        setLoading(true);
+        const { data, error } + await supabase.from('products').select('*').order('created_at', { ascending: false });
+        if (error) {
+            showToast('خطأ في جلب البيانات', true);
+        } else {
+            // مطابقة أعمدة قاعدة البيانات مع أسماء الحقول في النظام لديك
+            const formatted = (data || []).map(p => ({
+                id: p.id,
+                title: p.name_ar,
+                title_en: p.name_en,
+                partno: p.part_number,
+                eq_type: p.equipment,
+                brand: p.brand,
+                category: p.category,
+                status: p.status,
+                img_url: p.image_url,
+                description: p.description
+            }));
+            setProducts(formatted);
+        }
+        setLoading(false);
+    };
 
+    React.useEffect(() => {
+        fetchProducts();
+    }, []);
+
+    // دالة حفظ أو إضافة قطعة جديدة سحابياً عند الضغط على زر الحفظ
+    const handleSaveProduct = async (e) => {
+        e.preventDefault();
+        setSaving(true);
+
+        const payload = {
+            name_ar: currentPart.title,
+            name_en: currentPart.title_en,
+            part_number: currentPart.partno,
+            equipment: currentPart.eq_type,
+            brand: currentPart.brand,
+            category: currentPart.category,
+            status: currentPart.status,
+            image_url: currentPart.img_url,
+            description: currentPart.description
+        };
+
+        const { error } = await supabase.from('products').insert([payload]);
+
+        if (error) {
+            showToast('خطأ أثناء حفظ القطعة: ' + error.message, true);
+        } else {
+            showToast('تم حفظ القطعة في الكتالوج بنجاح!');
+            setModalOpen(false);
+            fetchProducts(); // إعادة تحديث القائمة فوراً
+        }
+        setSaving(false);
+    };
+      
       const showToast = (msg, isError = false) => {
         setToast({ msg, show: true, isError });
         setTimeout(() => setToast({ msg: '', show: false, isError: false }), 4000);
@@ -1582,7 +1641,10 @@
         </div>
       );
     }
-
+// تهيئة اتصال Supabase للربط السحابي
+const SUPABASE_URL = 'https://bvkmirdqymbpdpapflbd.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_lHvfIo5sd8jaF93jb1O1Bg_VUU4gHVh';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     function App() {
       return (
         <LangProvider>
