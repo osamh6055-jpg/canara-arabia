@@ -704,19 +704,30 @@
       const [catFilter, setCatFilter] = useState('all');
 
       useEffect(() => {
-        try {
-          const local = localStorage.getItem('canara_products');
-          if (local) {
-            setProducts(JSON.parse(local));
-          } else {
-            setProducts(initialProducts);
-            localStorage.setItem('canara_products', JSON.stringify(initialProducts));
-          }
-        } catch {
-          setProducts(initialProducts);
-        }
-        setLoading(false);
-      }, []);
+        const fetchPublicProducts = async () => {
+            setLoading(true);
+            const { data, error } = await supabase.from('products').select('*');
+            if (!error && data) {
+                const formatted = data.map(p => ({
+                    id: p.id,
+                    title: p.name_ar,
+                    title_en: p.name_en,
+                    partno: p.part_number,
+                    eq_type: p.equipment,
+                    brand: p.brand,
+                    category: p.category,
+                    status: p.status,
+                    img_url: p.image_url,
+                    description: p.description
+                }));
+                setProducts(formatted);
+            } else {
+                setProducts(initialProducts);
+            }
+            setLoading(false);
+        };
+        fetchPublicProducts();
+    }, []);
 
       const filtered = products.filter((p) => {
         const matchEq = eqFilter === 'all' || p.eq_type === eqFilter;
