@@ -1062,8 +1062,8 @@ const handleFileUpload = (e) => {
 
             json.forEach((row) => {
                 const partno = String(row['رقم القطعة'] || row['PartNo'] || row['partno'] || row['Part No'] || '').trim();
-                const title = String(row['القطعة'] || row['Title'] || row['name'] || row['Name'] || '').trim();
-                const title_en = String(row['الاسم بالإنجليزية (ENGLISH)'] || row['TitleEn'] || row['title_en'] || row['English Title'] || '').trim();
+                const title = String(row['اسم القطعة'] || row['القطعة'] || row['Title'] || row['name'] || row['Name'] || '').trim();
+                const title_en = String(row['الاسم بالانجليزي'] || row['الاسم بالإنجليزية (ENGLISH)'] || row['TitleEn'] || row['title_en'] || row['English Title'] || '').trim();
                 let eq_type = String(row['نوع المعدة'] || row['EquipmentType'] || row['eq_type'] || 'CATERPILLAR').toUpperCase().trim();
                 if (!['CATERPILLAR', 'JCB', 'BOBCAT'].includes(eq_type)) eq_type = 'CATERPILLAR';
                 let brand = String(row['الماركة'] || row['Brand'] || row['brand'] || 'ITR').toUpperCase().trim();
@@ -1111,7 +1111,7 @@ const handleFileUpload = (e) => {
             if (supabasePayloads.length > 0) {
                 const { error: sbError } = await supabase.from('products').insert(supabasePayloads);
                 if (sbError) {
-                    console.error(sbError);
+                    console.error("Supabase Error:", sbError);
                 }
             }
 
