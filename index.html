@@ -1127,31 +1127,6 @@ const handleFileUpload = (e) => {
     reader.readAsArrayBuffer(file);
 };
 
-            addedCount++;
-        }
-    }
-});
-
-// رفع القطع الجديدة دفعة واحدة إلى سوبابيس
-if (supabasePayloads.length > 0) {
-    const { error: sbError } = await supabase.from('products').insert(supabasePayloads);
-    if (sbError) {
-        console.error(sbError);
-    }
-}
-
-setProducts(currentList);
-fetchProducts(); // إعادة جلب البيانات فوراً من سوبابيس لتحديث الموقع العام
-showToast(`تم استيراد ${addedCount} قطعة جديدة بنجاح!`);
-e.target.value = '';
-          } catch (err) {
-            console.error(err);
-            showToast('حدث خطأ أثناء قراءة ملف الـ Excel. تأكد من صحة الأعمدة.', true);
-          }
-        };
-        reader.readAsArrayBuffer(file);
-      };
-
       const downloadTemplate = () => {
         const templateData = [
           {
