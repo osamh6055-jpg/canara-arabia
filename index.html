@@ -1039,13 +1039,12 @@
         setToast({ msg, show: true, isError });
         setTimeout(() => setToast({ msg: '', show: false, isError: false }), 4000);
       };
-
-      const handleFileUpload = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (evt) => {
-          try {
+const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+        try {
             const data = new Uint8Array(evt.target.result);
             const workbook = XLSX.read(data, { type: 'array' });
             const firstSheetName = workbook.SheetNames[0];
@@ -1053,57 +1052,80 @@
             const json = XLSX.utils.sheet_to_json(worksheet);
 
             if (!json || json.length === 0) {
-              showToast('الملف المرفوع فارغ أو لا يحتوي على بيانات صحيحة', true);
-              return;
+                showToast('الملف المرفوع فارغ أو لا يحتوي على بيانات صحيحة', true);
+                return;
             }
 
-         let addedCount = 0;
-let currentList = [...products];
-const supabasePayloads = [];
+            let addedCount = 0;
+            let currentList = [...products];
+            const supabasePayloads = [];
 
-json.forEach((row) => {
-    const partno = String(row['رقم القطعة'] || row['PartNo'] || row['partno'] || row['Part No'] || '').trim();
-    const title = String(row['القطعة'] || row['Title'] || row['name'] || row['Name'] || '').trim();
-    const title_en = String(row['الاسم بالإنجليزية (ENGLISH)'] || row['TitleEn'] || row['title_en'] || row['English Title'] || '').trim();
-    let eq_type = String(row['نوع المعدة'] || row['EquipmentType'] || row['eq_type'] || 'CATERPILLAR').toUpperCase().trim();
-    if (!['CATERPILLAR', 'JCB', 'BOBCAT'].includes(eq_type)) eq_type = 'CATERPILLAR';
-    let brand = String(row['الماركة'] || row['Brand'] || row['brand'] || 'ITR').toUpperCase().trim();
-    let category = String(row['التصنيف'] || row['Category'] || row['category'] || 'engine').toLowerCase().trim();
-    let status = String(row['الحالة'] || row['Status'] || row['status'] || 'instock').toLowerCase().trim();
-    if (status.includes('طلب')) status = 'custom';
-    else status = 'instock';
-    const img_url = String(row['رابط الصورة'] || row['ImageUrl'] || row['img_url'] || 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=80&w=600').trim();
-    const description = String(row['الوصف'] || row['Description'] || row['description'] || '').trim();
+            json.forEach((row) => {
+                const partno = String(row['رقم القطعة'] || row['PartNo'] || row['partno'] || row['Part No'] || '').trim();
+                const title = String(row['القطعة'] || row['Title'] || row['name'] || row['Name'] || '').trim();
+                const title_en = String(row['الاسم بالإنجليزية (ENGLISH)'] || row['TitleEn'] || row['title_en'] || row['English Title'] || '').trim();
+                let eq_type = String(row['نوع المعدة'] || row['EquipmentType'] || row['eq_type'] || 'CATERPILLAR').toUpperCase().trim();
+                if (!['CATERPILLAR', 'JCB', 'BOBCAT'].includes(eq_type)) eq_type = 'CATERPILLAR';
+                let brand = String(row['الماركة'] || row['Brand'] || row['brand'] || 'ITR').toUpperCase().trim();
+                let category = String(row['التصنيف'] || row['Category'] || row['category'] || 'engine').toLowerCase().trim();
+                let status = String(row['الحالة'] || row['Status'] || row['status'] || 'instock').toLowerCase().trim();
+                if (status.includes('طلب')) status = 'custom';
+                else status = 'instock';
+                const img_url = String(row['رابط الصورة'] || row['ImageUrl'] || row['img_url'] || 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=80&w=600').trim();
+                const description = String(row['الوصف'] || row['Description'] || row['description'] || '').trim();
 
-    if (partno && title) {
-        const exists = currentList.some((p) => p.partno?.toLowerCase() === partno.toLowerCase() && p.brand?.toLowerCase() === brand.toLowerCase());
-        if (!exists) {
-            const newPart = {
-                id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
-                title,
-                title_en,
-                partno,
-                eq_type,
-                brand,
-                category,
-                status,
-                img_url,
-                description
-            };
-            currentList.unshift(newPart);
+                if (partno && title) {
+                    const exists = currentList.some((p) => p.partno?.toLowerCase() === partno.toLowerCase() && p.brand?.toLowerCase() === brand.toLowerCase());
+                    if (!exists) {
+                        const newPart = {
+                            id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+                            title,
+                            title_en,
+                            partno,
+                            eq_type,
+                            brand,
+                            category,
+                            status,
+                            img_url,
+                            description
+                        };
+                        currentList.unshift(newPart);
 
-            // تجهيز البيانات للأعمدة في سوبابيس
-            supabasePayloads.push({
-                name_ar: title,
-                name_en: title_en,
-                part_number: partno,
-                equipment: eq_type,
-                brand: brand,
-                category: category,
-                status: status,
-                image_url: img_url,
-                description: description
+                        supabasePayloads.push({
+                            name_ar: title,
+                            name_en: title_en,
+                            part_number: partno,
+                            equipment: eq_type,
+                            brand: brand,
+                            category: category,
+                            status: status,
+                            image_url: img_url,
+                            description: description
+                        });
+
+                        addedCount++;
+                    }
+                }
             });
+
+            if (supabasePayloads.length > 0) {
+                const { error: sbError } = await supabase.from('products').insert(supabasePayloads);
+                if (sbError) {
+                    console.error(sbError);
+                }
+            }
+
+            setProducts(currentList);
+            fetchProducts();
+            showToast(`تم استيراد ${addedCount} قطعة جديدة بنجاح!`);
+            e.target.value = '';
+        } catch (err) {
+            console.error(err);
+            showToast('تأكد من صحة الأعمدة. حدث خطأ أثناء قراءة ملف Excel.', true);
+        }
+    };
+    reader.readAsArrayBuffer(file);
+};
 
             addedCount++;
         }
