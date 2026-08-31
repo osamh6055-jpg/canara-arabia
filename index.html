@@ -23,6 +23,9 @@
   <!-- Babel Standalone for JSX compilation in browser -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
 
+  <!-- SheetJS for Excel / CSV file parsing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
   <style>
     body {
       font-family: 'Cairo', 'Tajawal', sans-serif;
@@ -964,7 +967,94 @@
 
       const showToast = (msg, isError = false) => {
         setToast({ msg, show: true, isError });
-        setTimeout(() => setToast({ msg: '', show: false, isError: false }), 3500);
+        setTimeout(() => setToast({ msg: '', show: false, isError: false }), 4000);
+      };
+
+      const handleFileUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          try {
+            const data = new Uint8Array(evt.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            const json = XLSX.utils.sheet_to_json(worksheet);
+
+            if (!json || json.length === 0) {
+              showToast('الملف المرفوع فارغ أو لا يحتوي على بيانات صحيحة', true);
+              return;
+            }
+
+            let addedCount = 0;
+            let currentList = [...products];
+
+            json.forEach((row) => {
+              const partno = String(row['رقم القطعة'] || row['PartNo'] || row['partno'] || row['Part No'] || '').trim();
+              const title = String(row['اسم القطعة'] || row['Title'] || row['title'] || row['Name'] || '').trim();
+              const title_en = String(row['الاسم بالانجليزي'] || row['TitleEn'] || row['title_en'] || row['English Title'] || '').trim();
+              let eq_type = String(row['نوع المعدة'] || row['EquipmentType'] || row['eq_type'] || 'CATERPILLAR').toUpperCase().trim();
+              if (!['CATERPILLAR', 'JCB', 'BOBCAT'].includes(eq_type)) eq_type = 'CATERPILLAR';
+              let brand = String(row['الماركة'] || row['Brand'] || row['brand'] || 'ITR').toUpperCase().trim();
+              let category = String(row['التصنيف'] || row['Category'] || row['category'] || 'engine').toLowerCase().trim();
+              let status = String(row['الحالة'] || row['Status'] || row['status'] || 'instock').toLowerCase().trim();
+              if (status.includes('طلب') || status.includes('custom')) status = 'custom';
+              else status = 'instock';
+              const img_url = String(row['رابط الصورة'] || row['ImageUrl'] || row['img_url'] || 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=600').trim();
+              const description = String(row['الوصف'] || row['Description'] || row['description'] || '').trim();
+
+              if (partno && title) {
+                const exists = currentList.some((p) => p.partno.toLowerCase() === partno.toLowerCase() && p.brand.toLowerCase() === brand.toLowerCase());
+                if (!exists) {
+                  const newPart = {
+                    id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+                    title,
+                    title_en,
+                    partno,
+                    eq_type,
+                    brand,
+                    category,
+                    status,
+                    img_url,
+                    description
+                  };
+                  currentList.unshift(newPart);
+                  addedCount++;
+                }
+              }
+            });
+
+            setProducts(currentList);
+            localStorage.setItem('canara_products', JSON.stringify(currentList));
+            showToast(`تم استيراد ${addedCount} قطعة جديدة بنجاح من ملف الـ Excel!`);
+            e.target.value = '';
+          } catch (err) {
+            console.error(err);
+            showToast('حدث خطأ أثناء قراءة ملف الـ Excel. تأكد من صحة الأعمدة.', true);
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      };
+
+      const downloadTemplate = () => {
+        const templateData = [
+          {
+            "رقم القطعة": "1N4380",
+            "اسم القطعة": "طقم بساتم محرك كاتربيلر",
+            "الاسم بالانجليزي": "Caterpillar Engine Piston Kit",
+            "نوع المعدة": "CATERPILLAR",
+            "الماركة": "CGR",
+            "التصنيف": "engine",
+            "الحالة": "instock",
+            "رابط الصورة": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&q=80&w=600",
+            "الوصف": "طقم بساتم أصلي عالي الجودة لمواتير الديزل الثقيلة"
+          }
+        ];
+        const ws = XLSX.utils.json_to_sheet(templateData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "PartsTemplate");
+        XLSX.writeFile(wb, "canara_catalog_template.xlsx");
       };
 
       const loadData = useCallback(() => {
@@ -1114,15 +1204,25 @@
                 </div>
                 <div>
                   <h1 className="text-2xl md:text-3xl font-extrabold text-white">لوحة إدارة المنتجات</h1>
-                  <p className="text-gray-400 text-xs md:text-sm">إضافة، تعديل وحذف قطع الغيار المعروضة في الكتالوج</p>
+                  <p className="text-gray-400 text-xs md:text-sm">إضافة، تعديل واستيراد قطع الغيار عبر ملفات Excel</p>
                 </div>
               </div>
               <div className="flex items-center gap-3 flex-wrap">
+                <label className="bg-green-600 hover:bg-green-700 text-white font-bold px-4 py-2.5 rounded-xl transition-all shadow flex items-center gap-2 text-sm cursor-pointer">
+                  <i className="fas fa-file-excel text-base"></i> رفع ملف Excel
+                  <input type="file" accept=".xlsx, .xls, .csv" onChange={handleFileUpload} className="hidden" />
+                </label>
+                <button
+                  onClick={downloadTemplate}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2.5 rounded-xl transition-all shadow flex items-center gap-2 text-sm"
+                >
+                  <i className="fas fa-download text-base"></i> تحميل نموذج الـ Excel
+                </button>
                 <button
                   onClick={handleNew}
                   className="bg-[#F4B41A] hover:bg-[#e0a213] text-[#1E1E1E] font-bold px-5 py-2.5 rounded-xl transition-all shadow flex items-center gap-2 text-sm"
                 >
-                  <i className="fas fa-plus-circle text-base"></i> إضافة قطعة غيار جديدة
+                  <i className="fas fa-plus-circle text-base"></i> إضافة قطعة جديدة
                 </button>
                 <button
                   onClick={() => onNavigate('products')}
