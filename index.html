@@ -1214,7 +1214,7 @@ const handleLogin = (e) => {
 
             if (sbError) {
                 console.error("Supabase Update Error:", sbError);
-                showToast('حدث خطأ أثناء تعديل البيانات في Supabase', true);
+              showToast('حدث خطأ أثناء تعديل البيانات في Supabase', true);
                 setSaving(false);
                 return;
             }
@@ -1222,7 +1222,7 @@ const handleLogin = (e) => {
             // 2. تحديث قائمة المنتجات في الواجهة المحلية
             const updated = products.map((p) => (p.partno?.toLowerCase() === cleanPartNo && p.brand?.toLowerCase() === cleanBrand ? currentPart : p));
             setProducts(updated);
-            showToast('تم تعديل بيانات القطعة بنجاح!');
+           showToast('تم تعديل بيانات القطعة بنجاح!');
         } else {
             // في حالة إضافة قطعة جديدة تماماً
             const isDuplicate = products.some((p) => p.partno.trim().toLowerCase() === cleanPartNo && p.brand.trim().toLowerCase() === cleanBrand);
