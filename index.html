@@ -1219,19 +1219,44 @@ const handleLogin = (e) => {
                 return;
             }
 
-            // 2. تحديث قائمة المنتجات في الواجهة المحلية
-            const updated = products.map((p) => (p.partno?.toLowerCase() === cleanPartNo && p.brand?.toLowerCase() === cleanBrand ? currentPart : p));
-            setProducts(updated);
-           showToast('تم تعديل بيانات القطعة بنجاح!');
-        } else {
-            // في حالة إضافة قطعة جديدة تماماً
-            const isDuplicate = products.some((p) => p.partno.trim().toLowerCase() === cleanPartNo && p.brand.trim().toLowerCase() === cleanBrand);
+           // 2. تحديث قائمة المنتجات في الواجهة المحلية
+        const updated = products.map((p) => (p.partno?.toLowerCase() === cleanPartNo && p.brand?.toLowerCase() === cleanBrand ? currentPart : p));
+        setProducts(updated);
+        showToast('تم تعديل بيانات القطعة بنجاح!');
+    } else {
+        // في حالة إضافة قطعة جديدة تماماً
+        const isDuplicate = products.some((p) => p.partno.trim().toLowerCase() === cleanPartNo && p.brand.trim().toLowerCase() === cleanBrand);
 
-            if (isDuplicate) {
-                showToast(`عذراً، رقم القطعة (${currentPart.partno}) للماركة (${currentPart.brand}) مضاف سابقاً!`, true);
-                setSaving(false);
-                return;
-            }
+        if (isDuplicate) {
+            showToast(`عذراً، رقم القطعة (${currentPart.partno}) للماركة (${currentPart.brand}) مضاف سابقاً!`, true);
+            setSaving(false);
+            return;
+        }
+
+        const { error: insertError } = await supabase
+            .from('products')
+            .insert([{
+                name_ar: currentPart.title,
+                name_en: currentPart.title_en,
+                part_number: currentPart.partno,
+                equipment: currentPart.eq_type,
+                brand: currentPart.brand,
+                category: currentPart.category,
+                status: currentPart.status,
+                image_url: currentPart.img_url,
+                description: currentPart.description
+            }]);
+
+        if (insertError) {
+            console.error("Supabase Insert Error:", insertError);
+            showToast('حدث خطأ أثناء حفظ القطعة الجديدة', true);
+            setSaving(false);
+            return;
+        }
+
+        setProducts([currentPart, ...products]);
+        showToast('تمت إضافة القطعة بنجاح!');
+    }
 
             const { error: sbError } = await supabase
                 .from('products')
