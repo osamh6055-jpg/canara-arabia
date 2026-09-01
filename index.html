@@ -1188,43 +1188,82 @@ const handleLogin = (e) => {
         setModalOpen(true);
       };
 
-      const handleSave = (e) => {
-        e.preventDefault();
-        setSaving(true);
-        try {
-          const cleanPartNo = currentPart.partno.trim().toLowerCase();
-          const cleanBrand = currentPart.brand.trim().toLowerCase();
+     const handleSave = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+        const cleanPartNo = currentPart.partno.trim().toLowerCase();
+        const cleanBrand = currentPart.brand.trim().toLowerCase();
 
-          // Check if same Part Number and Brand already exist (excluding current part if editing)
-          const isDuplicate = products.some((p) => 
-            p.id !== currentPart.id && 
-            p.partno.trim().toLowerCase() === cleanPartNo && 
-            p.brand.trim().toLowerCase() === cleanBrand
-          );
+        if (isEditing) {
+            const { error: sbError } = await supabase
+                .from('products')
+                .update({
+                    name_ar: currentPart.title,
+                    name_en: currentPart.title_en,
+                    part_number: currentPart.partno,
+                    equipment: currentPart.eq_type,
+                    brand: currentPart.brand,
+                    category: currentPart.category,
+                    status: currentPart.status,
+                    image_url: currentPart.img_url,
+                    description: currentPart.description
+                })
+                .eq('part_number', currentPart.partno);
 
-          if (isDuplicate) {
-            showToast(`عذراً، رقم القطعة (${currentPart.partno}) للماركة (${currentPart.brand}) مضاف مسبقاً!`, true);
-            setSaving(false);
-            return;
-          }
+            if (sbError) {
+                console.error("Supabase Update Error:", sbError);
+                showToast('حدث خطأ أثناء تعديل البيانات في Supabase', true);
+                setSaving(false);
+                return;
+            }
 
-          let updated;
-          if (isEditing) {
-            updated = products.map((p) => (p.id === currentPart.id ? currentPart : p));
-            showToast('تم تعديل بيانات القطعة بنجاح');
-          } else {
-            const newItem = { ...currentPart, id: Date.now().toString() };
-            updated = [newItem, ...products];
-            showToast('تم إضافة القطعة الجديدة بنجاح للكتالوج');
-          }
-          setProducts(updated);
-          localStorage.setItem('canara_products', JSON.stringify(updated));
-          setModalOpen(false);
-        } catch {
-          showToast('حدث خطأ أثناء الحفظ', true);
+            const updated = products.map((p) => (p.partno?.toLowerCase() === cleanPartNo && p.brand?.toLowerCase() === cleanBrand ? currentPart : p));
+            setProducts(updated);
+            showToast('تم تعديل بيانات القطعة بنجاح!');
+        } else {
+            const isDuplicate = products.some((p) => p.partno.trim().toLowerCase() === cleanPartNo && p.brand.trim().toLowerCase() === cleanBrand);
+
+            if (isDuplicate) {
+                showToast(`عذراً، رقم القطعة (${currentPart.partno}) للماركة (${currentPart.brand}) مضاف سابقاً!`, true);
+                setSaving(false);
+                return;
+            }
+
+            const { error: sbError } = await supabase
+                .from('products')
+                .insert([{
+                    name_ar: currentPart.title,
+                    name_en: currentPart.title_en,
+                    part_number: currentPart.partno,
+                    equipment: currentPart.eq_type,
+                    brand: currentPart.brand,
+                    category: currentPart.category,
+                    status: currentPart.status,
+                    image_url: currentPart.img_url,
+                    description: currentPart.description
+                }]);
+
+            if (sbError) {
+                console.error("Supabase Insert Error:", sbError);
+                showToast('حدث خطأ أثناء حفظ القطعة الجديدة', true);
+                setSaving(false);
+                return;
+            }
+
+            setProducts([currentPart, ...products]);
+            showToast('تمت إضافة القطعة بنجاح!');
         }
+
+        setIsModalOpen(false);
+        fetchProducts();
+    } catch (err) {
+        console.error(err);
+        showToast('حدث خطأ غير متوقع أثناء الحفظ', true);
+    } finally {
         setSaving(false);
-      };
+    }
+};
 
       const handleDelete = async (id) => {
     if (!window.confirm('هل أنت متأكد من رغبتك في حذف هذه القطعة من الكتالوج؟')) return;
