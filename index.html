@@ -1188,7 +1188,7 @@ const handleLogin = (e) => {
         setModalOpen(true);
       };
 
-     const handleSave = async (e) => {
+    const handleSave = async (e) => {
     e.preventDefault();
     setSaving(true);
     try {
@@ -1196,6 +1196,7 @@ const handleLogin = (e) => {
         const cleanBrand = currentPart.brand.trim().toLowerCase();
 
         if (isEditing) {
+            // 1. تحديث المنتج في سوبابيس (Supabase)
             const { error: sbError } = await supabase
                 .from('products')
                 .update({
@@ -1209,7 +1210,7 @@ const handleLogin = (e) => {
                     image_url: currentPart.img_url,
                     description: currentPart.description
                 })
-                .eq('part_number', currentPart.partno);
+                .eq('part_number', currentPart.partno); // المطابقة حسب رقم القطعة
 
             if (sbError) {
                 console.error("Supabase Update Error:", sbError);
@@ -1218,10 +1219,12 @@ const handleLogin = (e) => {
                 return;
             }
 
+            // 2. تحديث قائمة المنتجات في الواجهة المحلية
             const updated = products.map((p) => (p.partno?.toLowerCase() === cleanPartNo && p.brand?.toLowerCase() === cleanBrand ? currentPart : p));
             setProducts(updated);
             showToast('تم تعديل بيانات القطعة بنجاح!');
         } else {
+            // في حالة إضافة قطعة جديدة تماماً
             const isDuplicate = products.some((p) => p.partno.trim().toLowerCase() === cleanPartNo && p.brand.trim().toLowerCase() === cleanBrand);
 
             if (isDuplicate) {
@@ -1256,7 +1259,7 @@ const handleLogin = (e) => {
         }
 
         setIsModalOpen(false);
-        fetchProducts();
+        fetchProducts(); // إعادة جلب البيانات لضمان المزامنة
     } catch (err) {
         console.error(err);
         showToast('حدث خطأ غير متوقع أثناء الحفظ', true);
@@ -1264,11 +1267,6 @@ const handleLogin = (e) => {
         setSaving(false);
     }
 };
-
-      const handleDelete = async (id) => {
-    if (!window.confirm('هل أنت متأكد من رغبتك في حذف هذه القطعة من الكتالوج؟')) return;
-    try {
-        setSaving(true);
         
         // 1. الحذف من قاعدة بيانات Supabase
         const { error } = await supabase
