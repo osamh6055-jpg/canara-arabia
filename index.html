@@ -1264,8 +1264,9 @@ const handleLogin = (e) => {
         setSaving(false);
     }
 };
-        
-        // 1. الحذف من قاعدة بيانات Supabase
+   const handleDelete = async (id) => {
+    setSaving(true);
+    try {
         const { error } = await supabase
             .from('products')
             .delete()
@@ -1273,11 +1274,10 @@ const handleLogin = (e) => {
 
         if (error) throw error;
 
-        // 2. التحديث المحلي بعد النجاح في Supabase
         const updated = products.filter((p) => p.id !== id);
         setProducts(updated);
         localStorage.setItem('canara_products', JSON.stringify(updated));
-        showToast('تم حذف القطعة من الكتالوج');
+        showToast('تم حذف القطعة من الكاتالوج');
     } catch (err) {
         console.error('Delete error:', err);
         showToast('حدث خطأ أثناء الحذف', true);
