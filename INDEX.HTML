@@ -12,13 +12,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Supabase JS Client library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
                         canara: {
-                            yellow: '#FFC000', // المستوحى من الملف الشخصي
+                            yellow: '#FFC000',
                             dark: '#111111',
                             gray: '#2A2A2A',
                             light: '#F5F5F5'
@@ -38,7 +41,6 @@
             background-color: #F5F5F5;
         }
         
-        /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -64,7 +66,6 @@
             border-bottom: 4px solid #FFC000;
         }
 
-        /* Toast Animation */
         @keyframes slideInUp {
             from { transform: translateY(100%); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
@@ -79,27 +80,33 @@
     <header class="bg-canara-dark text-white shadow-md relative z-20 border-b-4 border-canara-yellow">
         <div class="container mx-auto px-4 py-4 flex justify-between items-center">
             <div class="flex items-center gap-4 cursor-pointer" onclick="showUserView()">
-                <!-- الشعار الرسمي لشركة كنارة -->
                 <img src="https://i.postimg.cc/prcB96RP/efa50bdf-396f-46d0-a13f-4938e45656a4.png" alt="شعار شركة كنارة العربية" class="h-12 w-auto object-contain rounded-lg">
                 <div>
                     <h1 class="text-xl font-bold tracking-wider">شركة كنارة العربية</h1>
                     <p class="text-xs text-canara-yellow uppercase tracking-widest">Canara Arabia Company</p>
                 </div>
             </div>
+            <div class="flex items-center gap-2">
+                <button onclick="openLoginModal()" class="text-xs md:text-sm bg-gray-800 hover:bg-gray-700 text-canara-yellow px-3 py-1.5 rounded-lg border border-gray-700 transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-user-gear"></i>
+                    <span class="hidden sm:inline">لوحة التحكم</span>
+                </button>
+            </div>
         </div>
     </header>
 
     <div id="toast-container" class="fixed bottom-5 left-1/2 transform -translate-x-1/2 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-    <div id="login-modal" class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden flex justify-center items-center backdrop-blur-sm">
-        <div class="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md border-t-4 border-canara-yellow transform transition-all">
+    <!-- Login Modal -->
+    <div id="login-modal" class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden flex justify-center items-center backdrop-blur-sm p-4">
+        <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8 w-full max-w-md border-t-4 border-canara-yellow">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold text-canara-dark">لوحة الإدارة</h2>
                 <button onclick="closeLoginModal()" class="text-gray-500 hover:text-red-500">
                     <i class="fa-solid fa-times text-xl"></i>
                 </button>
             </div>
-            <p class="text-gray-600 mb-4 text-sm">الرجاء إدخال كلمة المرور للوصول إلى لوحة التحكم.</p>
+            <p class="text-gray-600 mb-4 text-sm">الرجاء إدخال كلمة المرور للوصول إلى لوحة التحكم والتعديل على قطع الغيار.</p>
             <form id="login-form" onsubmit="handleLogin(event)">
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-1">كلمة المرور</label>
@@ -107,17 +114,16 @@
                         <span class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
                             <i class="fa-solid fa-key"></i>
                         </span>
-                        <input type="password" id="admin-password" class="w-full pr-10 pl-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-canara-yellow focus:border-transparent transition-shadow" placeholder="••••••••" required>
+                        <input type="password" id="admin-password" class="w-full pr-10 pl-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-canara-yellow" placeholder="••••••••" required>
                     </div>
                 </div>
-                <button type="submit" class="w-full bg-canara-yellow text-canara-dark font-bold py-2 px-4 rounded-lg hover:bg-yellow-500 transition-colors">
+                <button type="submit" class="w-full bg-canara-yellow text-canara-dark font-bold py-2.5 px-4 rounded-lg hover:bg-yellow-500 transition-colors">
                     تسجيل الدخول
                 </button>
             </form>
         </div>
     </div>
 
-    <!-- MAIN CONTENT AREA -->
     <main class="flex-grow flex flex-col">
         
         <div id="user-view" class="flex-grow flex flex-col">
@@ -133,7 +139,7 @@
                             <span class="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 text-lg">
                                 <i class="fa-solid fa-magnifying-glass"></i>
                             </span>
-                            <input type="text" id="search-input" class="w-full pr-11 pl-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-canara-yellow text-base text-gray-800 placeholder-gray-400" placeholder="ابحث باسم القطعة أو رقمها (مثال: مضخة، CA-98765...)" oninput="handleSearch()">
+                            <input type="text" id="search-input" class="w-full pr-11 pl-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-canara-yellow text-base text-gray-800 placeholder-gray-400" placeholder="ابحث باسم القطعة، البراند، أو رقم القطعة..." oninput="handleSearch()">
                         </div>
                         <button onclick="handleSearch()" class="bg-canara-dark text-canara-yellow font-bold py-3 px-8 rounded-lg hover:bg-gray-800 transition-colors whitespace-nowrap flex items-center justify-center gap-2">
                             <i class="fa-solid fa-search"></i>
@@ -151,12 +157,17 @@
             <!-- Product Grid Section -->
             <section class="py-12 px-4 container mx-auto flex-grow">
                 <div class="flex justify-between items-center mb-8 border-b border-gray-200 pb-4">
-                    <h3 class="text-2xl font-bold text-canara-dark border-r-4 border-canara-yellow pr-3">المنتجات المتوفرة</h3>
+                    <div class="flex items-center gap-3">
+                        <h3 class="text-2xl font-bold text-canara-dark border-r-4 border-canara-yellow pr-3">المنتجات المتوفرة</h3>
+                        <span id="supabase-status-badge" class="text-xs px-2.5 py-1 rounded-full font-medium bg-gray-200 text-gray-600 flex items-center gap-1">
+                            <i class="fa-solid fa-database text-[10px]"></i> <span id="db-source-text">تخزين محلي</span>
+                        </span>
+                    </div>
                     <span id="results-count" class="bg-gray-200 text-gray-700 py-1 px-3 rounded-full text-sm font-medium"></span>
                 </div>
                 
                 <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    <!-- Products will be injected here via JS -->
+                    <!-- Products injected via JS -->
                 </div>
                 
                 <div id="empty-state" class="hidden flex-col items-center justify-center py-16 text-gray-500">
@@ -168,14 +179,60 @@
 
         <div id="admin-view" class="hidden flex-grow bg-gray-100 p-4 md:p-8">
             <div class="container mx-auto max-w-6xl">
-                <div class="flex justify-between items-center mb-8 bg-white p-6 rounded-xl shadow-sm border-r-4 border-canara-dark">
+                <!-- Header Control -->
+                <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-8 bg-white p-6 rounded-xl shadow-sm border-r-4 border-canara-dark">
                     <div>
-                        <h2 class="text-2xl font-bold text-canara-dark mb-1">لوحة التحكم بالمنتجات</h2>
-                        <p class="text-sm text-gray-500">إدارة قاعدة بيانات قطع الغيار الخاصة بشركة كنارة.</p>
+                        <h2 class="text-2xl font-bold text-canara-dark mb-1">لوحة التحكم بالمنتجات وقواعد البيانات</h2>
+                        <p class="text-sm text-gray-500">إدارة قاعدة البيانات وحفظ منتجات قطع الغيار على Supabase أو محلياً.</p>
                     </div>
-                    <button onclick="logoutAdmin()" class="bg-red-50 text-red-600 hover:bg-red-100 font-medium py-2 px-4 rounded-lg transition-colors flex items-center gap-2">
-                        <i class="fa-solid fa-sign-out-alt"></i> خروج
-                    </button>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="toggleSupabaseSettings()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center gap-2 text-sm">
+                            <i class="fa-solid fa-plug"></i> إعدادات Supabase
+                        </button>
+                        <button onclick="logoutAdmin()" class="bg-red-50 text-red-600 hover:bg-red-100 font-medium py-2 px-4 rounded-lg transition-colors flex items-center gap-2 text-sm">
+                            <i class="fa-solid fa-sign-out-alt"></i> خروج
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Supabase Settings Box -->
+                <div id="supabase-config-box" class="hidden mb-8 bg-white rounded-xl shadow-md p-6 border-2 border-emerald-500">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-bold text-emerald-800 flex items-center gap-2">
+                            <i class="fa-solid fa-database text-emerald-600"></i> إعدادات الربط مع Supabase
+                        </h3>
+                        <button onclick="toggleSupabaseSettings()" class="text-gray-400 hover:text-gray-600">
+                            <i class="fa-solid fa-xmark text-lg"></i>
+                        </button>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4 leading-relaxed">
+                        قم بإدخال بيانات مشروعك على <strong>Supabase</strong> ليتم حفظ كافة قطع الغيار ومشاركتها أونلاين على GitHub عبر كافة الأجهزة مباشرة:
+                    </p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Project URL (رابط المشروع)</label>
+                            <input type="text" id="cfg-supabase-url" placeholder="https://xyz.supabase.co" class="w-full p-2.5 border border-gray-300 rounded focus:ring-2 focus:ring-emerald-500 text-sm font-mono" dir="ltr">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Anon / Public Key (مفتاح العميل)</label>
+                            <input type="password" id="cfg-supabase-key" placeholder="eyJhbGciOi..." class="w-full p-2.5 border border-gray-300 rounded focus:ring-2 focus:ring-emerald-500 text-sm font-mono" dir="ltr">
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-gray-100">
+                        <div class="flex gap-2">
+                            <button onclick="saveSupabaseConfig()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-5 rounded-lg text-sm transition-colors flex items-center gap-2">
+                                <i class="fa-solid fa-check"></i> حفظ واختبار الربط
+                            </button>
+                            <button onclick="clearSupabaseConfig()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg text-sm transition-colors">
+                                إزالة وإعادة للتخزين المحلي
+                            </button>
+                        </div>
+                        <button onclick="copySqlSchema()" class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 py-2 px-3 rounded-lg flex items-center gap-1">
+                            <i class="fa-solid fa-code"></i> نسخ أومر إنشاء الجدول SQL (في Supabase)
+                        </button>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -206,7 +263,7 @@
                                     <p class="text-xs text-gray-400 mt-1">يرجى توفير رابط مباشر لصورة المنتج.</p>
                                 </div>
                                 <div class="flex gap-2">
-                                    <button type="submit" class="flex-1 bg-canara-dark text-canara-yellow font-bold py-2.5 px-4 rounded hover:bg-gray-800 transition-colors flex justify-center items-center gap-2">
+                                    <button type="submit" id="submit-btn" class="flex-1 bg-canara-dark text-canara-yellow font-bold py-2.5 px-4 rounded hover:bg-gray-800 transition-colors flex justify-center items-center gap-2">
                                         <i class="fa-solid fa-save"></i> <span id="submit-btn-text">إضافة المنتج</span>
                                     </button>
                                     <button type="button" id="cancel-edit-btn" onclick="cancelEdit()" class="hidden bg-gray-200 text-gray-700 font-bold py-2.5 px-4 rounded hover:bg-gray-300 transition-colors">
@@ -222,7 +279,7 @@
                         <div class="bg-white rounded-xl shadow-md overflow-hidden">
                             <div class="p-4 bg-gray-50 border-b flex justify-between items-center">
                                 <h3 class="font-bold text-gray-700">المنتجات الحالية</h3>
-                                <span id="admin-count" class="bg-canara-yellow text-canara-dark px-2 py-1 rounded text-xs font-bold"></span>
+                                <span id="admin-count" class="bg-canara-yellow text-canara-dark px-2.5 py-1 rounded text-xs font-bold"></span>
                             </div>
                             <div class="overflow-x-auto">
                                 <table class="w-full text-right">
@@ -236,7 +293,7 @@
                                         </tr>
                                     </thead>
                                     <tbody id="admin-product-list" class="divide-y divide-gray-200">
-                                        <!-- Admin list injected here -->
+                                        <!-- Admin list injected via JS -->
                                     </tbody>
                                 </table>
                             </div>
@@ -255,14 +312,14 @@
                 <span class="text-sm">© 2026 شركة كنارة العربية. جميع الحقوق محفوظة.</span>
             </div>
             <div class="flex gap-4 text-sm">
-                <span><i class="fa-solid fa-phone mr-1"></i> 011 446 9427</span>
-                <span><i class="fa-solid fa-envelope mr-1"></i> info@canara.com.sa</span>
+                <span><i class="fa-solid fa-phone mr-1 text-canara-yellow"></i> 011 446 9427</span>
+                <span><i class="fa-solid fa-envelope mr-1 text-canara-yellow"></i> info@canara.com.sa</span>
             </div>
         </div>
     </footer>
 
     <script>
-        // Mock Default Data inspired by heavy machinery parts
+        // Default Mock Data
         const defaultProducts = [
             { id: '1', name: 'مضخة هيدروليكية رئيسية', type: 'ITR', partNumber: 'CA-98765', price: 3500, imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Hydraulic+Pump' },
             { id: '2', name: 'فلتر زيت محرك', type: 'CAT', partNumber: '1R-1808', price: 180, imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Oil+Filter' },
@@ -272,14 +329,14 @@
             { id: '6', name: 'مسمار وجلبة بوكت', type: 'Komatsu', partNumber: 'PB-009', price: 220, imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Pin+%26+Bushing' }
         ];
 
-        // State Management
-        let products = JSON.parse(localStorage.getItem('canara_products'));
-        if (!products || products.length === 0) {
-            products = defaultProducts;
-            saveProducts();
-        }
-        
+        // Global Supabase Credentials - Dynamic or via LocalStorage Settings
+        let SUPABASE_URL = localStorage.getItem('canara_sp_url') || '';
+        let SUPABASE_KEY = localStorage.getItem('canara_sp_key') || '';
+        let supabaseClient = null;
+
+        let products = [];
         let isAdminLoggedIn = false;
+        let editingProductId = null;
 
         // DOM Elements
         const userView = document.getElementById('user-view');
@@ -291,20 +348,74 @@
         const adminProductList = document.getElementById('admin-product-list');
         const adminCount = document.getElementById('admin-count');
         const searchInput = document.getElementById('search-input');
+        const dbSourceBadge = document.getElementById('db-source-text');
+        const supabaseConfigBox = document.getElementById('supabase-config-box');
 
-        
-        function saveProducts() {
+        function initSupabase() {
+            if (window.supabase && SUPABASE_URL && SUPABASE_KEY) {
+                try {
+                    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                    dbSourceBadge.textContent = 'سحابي (Supabase)';
+                    document.getElementById('supabase-status-badge').className = 'text-xs px-2.5 py-1 rounded-full font-medium bg-emerald-100 text-emerald-700 flex items-center gap-1';
+                    return true;
+                } catch (e) {
+                    console.error("Supabase init error:", e);
+                }
+            }
+            dbSourceBadge.textContent = 'تخزين محلي';
+            document.getElementById('supabase-status-badge').className = 'text-xs px-2.5 py-1 rounded-full font-medium bg-amber-100 text-amber-800 flex items-center gap-1';
+            supabaseClient = null;
+            return false;
+        }
+
+        async function loadProducts() {
+            if (initSupabase()) {
+                try {
+                    const { data, error } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
+                    if (!error && data) {
+                        products = data.map(item => ({
+                            id: item.id ? String(item.id) : item.partNumber,
+                            name: item.name,
+                            type: item.type || item.brand || '',
+                            partNumber: item.partNumber || item.part_number,
+                            price: item.price,
+                            imageUrl: item.imageUrl || item.image_url
+                        }));
+                        renderUserGrid();
+                        if (isAdminLoggedIn) renderAdminList();
+                        return;
+                    } else if (error) {
+                        console.warn("Supabase fetch warning, using local fallback:", error.message);
+                        showToast('يتعذر الجلب من Supabase: تأكد من إنشاء جدول products', 'error');
+                    }
+                } catch (err) {
+                    console.error("Error connecting to Supabase:", err);
+                }
+            }
+
+            // Fallback to LocalStorage
+            const localData = localStorage.getItem('canara_products');
+            if (localData) {
+                products = JSON.parse(localData);
+            } else {
+                products = defaultProducts;
+                localStorage.setItem('canara_products', JSON.stringify(products));
+            }
+            renderUserGrid();
+            if (isAdminLoggedIn) renderAdminList();
+        }
+
+        function saveLocalProducts() {
             localStorage.setItem('canara_products', JSON.stringify(products));
         }
 
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            
-            const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+            const bgColor = type === 'success' ? 'bg-emerald-600' : 'bg-red-600';
             const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
             
-            toast.className = `${bgColor} text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 toast-enter pointer-events-auto`;
+            toast.className = `${bgColor} text-white px-6 py-3 rounded-lg shadow-xl flex items-center gap-3 toast-enter pointer-events-auto text-sm font-bold`;
             toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
             
             container.appendChild(toast);
@@ -320,7 +431,7 @@
         function renderUserGrid(dataToRender = products) {
             productGrid.innerHTML = '';
             
-            if (dataToRender.length === 0) {
+            if (!dataToRender || dataToRender.length === 0) {
                 productGrid.classList.add('hidden');
                 emptyState.classList.remove('hidden');
                 emptyState.classList.add('flex');
@@ -337,10 +448,10 @@
                 const card = document.createElement('div');
                 card.className = 'bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 card-hover flex flex-col h-full';
                 
-                const productBrand = product.type || product.brand || 'غير محدد';
+                const productBrand = product.type || 'غير محدد';
                 const formattedPrice = product.price ? Number(product.price).toLocaleString('en-US') : 'حسب الطلب';
                 const waNumber = "966567618315";
-                const waMessage = encodeURIComponent(`مرحباً شركة كنارة، أود الاستفسار عن المنتج التالي:\nالاسم: ${product.name}\nالماركة: ${productBrand}\nرقم القطعة: ${product.partNumber}\nالسعر المعلن: ${product.price ? product.price + ' ريال' : 'غير محدد'}`);
+                const waMessage = encodeURIComponent(`مرحباً شركة كنارة، أود الاستفسار عن القطعة التالية:\nالاسم: ${product.name}\nالبراند: ${productBrand}\nرقم القطعة: ${product.partNumber}\nالسعر المعلن: ${product.price ? product.price + ' ريال' : 'غير محدد'}`);
                 const waUrl = `https://wa.me/${waNumber}?text=${waMessage}`;
 
                 card.innerHTML = `
@@ -366,9 +477,9 @@
                                 <span class="text-lg font-extrabold text-canara-dark"><span dir="ltr">${formattedPrice}</span> <span class="text-xs font-normal text-gray-500">ر.س</span></span>
                             </div>
                         </div>
-                        <a href="${waUrl}" target="_blank" class="w-full bg-[#25D366] hover:bg-[#128C7E] text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
+                        <a href="${waUrl}" target="_blank" class="w-full bg-[#25D366] hover:bg-[#128C7E] text-white font-bold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
                             <i class="fa-brands fa-whatsapp text-xl"></i>
-                            <span>استفسار</span>
+                            <span>استفسار عبر واتساب</span>
                         </a>
                     </div>
                 `;
@@ -378,22 +489,20 @@
 
         function handleSearch() {
             const query = searchInput.value.toLowerCase().trim();
-
             if (!query) {
                 renderUserGrid(products);
                 return;
             }
 
             const filtered = products.filter(p => {
-                const matchName = p.name.toLowerCase().includes(query);
-                const matchNumber = p.partNumber.toLowerCase().includes(query);
+                const matchName = (p.name || '').toLowerCase().includes(query);
+                const matchNumber = (p.partNumber || '').toLowerCase().includes(query);
                 const matchType = (p.type || '').toLowerCase().includes(query);
                 return matchName || matchNumber || matchType;
             });
 
             renderUserGrid(filtered);
         }
-
 
         function openLoginModal() {
             if (isAdminLoggedIn) {
@@ -416,7 +525,7 @@
                 isAdminLoggedIn = true;
                 closeLoginModal();
                 showAdminView();
-                showToast('تم تسجيل الدخول للوحة الإدارة بنجاح');
+                showToast('تم تسجيل الدخول لوحة التحكم بنجاح');
             } else {
                 showToast('كلمة المرور غير صحيحة', 'error');
             }
@@ -426,7 +535,6 @@
             userView.classList.remove('hidden');
             adminView.classList.add('hidden');
             renderUserGrid();
-            // Reset search
             if (searchInput) searchInput.value = '';
         }
 
@@ -435,12 +543,79 @@
             userView.classList.add('hidden');
             adminView.classList.remove('hidden');
             renderAdminList();
+            
+            // Populate current config inputs
+            document.getElementById('cfg-supabase-url').value = SUPABASE_URL;
+            document.getElementById('cfg-supabase-key').value = SUPABASE_KEY;
         }
 
         function logoutAdmin() {
             isAdminLoggedIn = false;
             showUserView();
             showToast('تم تسجيل الخروج');
+        }
+
+        function toggleSupabaseSettings() {
+            supabaseConfigBox.classList.toggle('hidden');
+        }
+
+        function saveSupabaseConfig() {
+            const url = document.getElementById('cfg-supabase-url').value.trim();
+            const key = document.getElementById('cfg-supabase-key').value.trim();
+
+            if (!url || !key) {
+                showToast('يرجى إدخال الرابط والمفتاح الخاص بـ Supabase', 'error');
+                return;
+            }
+
+            SUPABASE_URL = url;
+            SUPABASE_KEY = key;
+            localStorage.setItem('canara_sp_url', url);
+            localStorage.setItem('canara_sp_key', key);
+
+            showToast('تم حفظ إعدادات Supabase، جاري إعادة التحميل...');
+            loadProducts();
+            toggleSupabaseSettings();
+        }
+
+        function clearSupabaseConfig() {
+            SUPABASE_URL = '';
+            SUPABASE_KEY = '';
+            localStorage.removeItem('canara_sp_url');
+            localStorage.removeItem('canara_sp_key');
+            document.getElementById('cfg-supabase-url').value = '';
+            document.getElementById('cfg-supabase-key').value = '';
+            showToast('تم إزالة ربط Supabase والعودة للتخزين المحلي');
+            loadProducts();
+            toggleSupabaseSettings();
+        }
+
+        function copySqlSchema() {
+            const sql = `
+-- 1. إنشاء جدول قطع الغيار
+CREATE TABLE IF NOT EXISTS products (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at TIMESTAMPTZ DEFAULT now(),
+    name TEXT NOT NULL,
+    type TEXT NOT NULL,
+    partNumber TEXT UNIQUE NOT NULL,
+    price NUMERIC NOT NULL,
+    imageUrl TEXT NOT NULL
+);
+
+-- 2. تفعيل صلاحيات القراءة والكتابة العامة
+ALTER TABLE products ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public Read Access" ON products FOR SELECT USING (true);
+CREATE POLICY "Public Insert Access" ON products FOR INSERT WITH CHECK (true);
+CREATE POLICY "Public Update Access" ON products FOR UPDATE USING (true);
+CREATE POLICY "Public Delete Access" ON products FOR DELETE USING (true);
+            `.trim();
+
+            navigator.clipboard.writeText(sql).then(() => {
+                showToast('تم نسخ كود SQL بنجاح! الصقه في SQL Editor بـ Supabase');
+            }).catch(() => {
+                showToast('فشل النسخ التلقائي، يمكنك نسخه يدوياً من الشفرة', 'error');
+            });
         }
 
         function renderAdminList() {
@@ -483,10 +658,8 @@
             });
         }
 
-        let editingProductId = null;
-
         function editProduct(id) {
-            const product = products.find(p => p.id === id);
+            const product = products.find(p => String(p.id) === String(id));
             if (!product) return;
             
             editingProductId = id;
@@ -509,7 +682,7 @@
             document.getElementById('cancel-edit-btn').classList.add('hidden');
         }
 
-        function handleAddProduct(e) {
+        async function handleAddProduct(e) {
             e.preventDefault();
             const name = document.getElementById('new-name').value.trim();
             const type = document.getElementById('new-type').value.trim();
@@ -522,55 +695,93 @@
                 return;
             }
 
-            if (editingProductId) {
-                if (products.some(p => p.id !== editingProductId && p.partNumber.toLowerCase() === number.toLowerCase())) {
-                    showToast('رقم القطعة مستخدم لمنتج آخر!', 'error');
-                    return;
-                }
-                const index = products.findIndex(p => p.id === editingProductId);
-                if (index !== -1) {
-                    products[index] = { ...products[index], name, type, partNumber: number, price: Number(price), imageUrl };
-                    saveProducts();
+            const productData = {
+                name,
+                type,
+                partNumber: number,
+                price: Number(price),
+                imageUrl
+            };
+
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-50');
+
+            try {
+                if (supabaseClient) {
+                    if (editingProductId) {
+                        const { error } = await supabaseClient
+                            .from('products')
+                            .update(productData)
+                            .eq('id', editingProductId);
+
+                        if (error) throw error;
+                        showToast('تم التعديل في Supabase بنجاح');
+                    } else {
+                        const { error } = await supabaseClient
+                            .from('products')
+                            .insert([productData]);
+
+                        if (error) throw error;
+                        showToast('تم إضافة المنتج في Supabase بنجاح');
+                    }
+                    await loadProducts();
+                    cancelEdit();
+                } else {
+                    // Local fallback
+                    if (editingProductId) {
+                        const index = products.findIndex(p => String(p.id) === String(editingProductId));
+                        if (index !== -1) {
+                            products[index] = { ...products[index], ...productData };
+                            saveLocalProducts();
+                            showToast('تم تعديل بيانات المنتج محلياً');
+                        }
+                    } else {
+                        if (products.some(p => p.partNumber.toLowerCase() === number.toLowerCase())) {
+                            showToast('رقم القطعة موجود مسبقاً!', 'error');
+                            submitBtn.disabled = false;
+                            submitBtn.classList.remove('opacity-50');
+                            return;
+                        }
+                        const newProduct = { id: Date.now().toString(), ...productData };
+                        products.push(newProduct);
+                        saveLocalProducts();
+                        showToast('تمت إضافة المنتج محلياً');
+                    }
                     renderAdminList();
                     renderUserGrid();
                     cancelEdit();
-                    showToast('تم تعديل بيانات المنتج بنجاح');
                 }
-            } else {
-                if (products.some(p => p.partNumber.toLowerCase() === number.toLowerCase())) {
-                    showToast('رقم القطعة موجود مسبقاً!', 'error');
-                    return;
-                }
-
-                const newProduct = {
-                    id: Date.now().toString(),
-                    name: name,
-                    type: type,
-                    partNumber: number,
-                    price: Number(price),
-                    imageUrl: imageUrl
-                };
-
-                products.push(newProduct);
-                saveProducts();
-                renderAdminList();
-                renderUserGrid();
-                
-                document.getElementById('add-product-form').reset();
-                showToast('تمت إضافة المنتج بنجاح');
-                document.getElementById('new-name').focus();
+            } catch (err) {
+                console.error("Save error:", err);
+                showToast(`خطأ في الحفظ: ${err.message || 'تأكد من الاتصال'}`, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-50');
             }
         }
 
-        function deleteProduct(id) {
-            products = products.filter(p => p.id !== id);
-            saveProducts();
+        async function deleteProduct(id) {
+            if (supabaseClient) {
+                try {
+                    const { error } = await supabaseClient.from('products').delete().eq('id', id);
+                    if (error) throw error;
+                    showToast('تم حذف القطعة من Supabase');
+                    await loadProducts();
+                    return;
+                } catch (err) {
+                    console.error("Delete error:", err);
+                    showToast(`خطأ بالحذف: ${err.message}`, 'error');
+                }
+            }
+
+            products = products.filter(p => String(p.id) !== String(id));
+            saveLocalProducts();
             renderAdminList();
             renderUserGrid();
-            showToast('تم حذف المنتج');
+            showToast('تم حذف المنتج محلياً');
         }
 
-        // التحقق من وجود كلمة الإدارة في الرابط
         function checkAdminUrl() {
             const currentUrl = decodeURIComponent(window.location.href).toUpperCase();
             if (currentUrl.includes('ADMIN PANEL') || currentUrl.includes('ADMIN_PANEL') || currentUrl.includes('ADMIN')) {
@@ -578,14 +789,13 @@
             }
         }
 
-        // Initialize on load
+        // Initialize on Load
         window.onload = () => {
-            renderUserGrid();
+            loadProducts();
             checkAdminUrl();
         };
 
         window.addEventListener('hashchange', checkAdminUrl);
-
     </script>
 </body>
 </html>
