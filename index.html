@@ -199,15 +199,45 @@
                 <div id="supabase-config-box" class="hidden mb-8 bg-white rounded-xl shadow-md p-6 border-2 border-emerald-500">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-bold text-emerald-800 flex items-center gap-2">
-                            <i class="fa-solid fa-database text-emerald-600"></i> إعدادات الربط مع Supabase
+                            <i class="fa-solid fa-database text-emerald-600"></i> إعدادات الربط مع التخزين السحابي (Supabase)
                         </h3>
-                        <button onclick="toggleSupabaseSettings()" class="text-gray-400 hover:text-gray-600">
-                            <i class="fa-solid fa-xmark text-lg"></i>
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <button onclick="toggleSetupGuide()" class="text-xs bg-emerald-100 text-emerald-800 hover:bg-emerald-200 px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 transition-colors">
+                                <i class="fa-solid fa-book-open"></i> دليل الشرح خطوة بخطوة
+                            </button>
+                            <button onclick="toggleSupabaseSettings()" class="text-gray-400 hover:text-gray-600">
+                                <i class="fa-solid fa-xmark text-lg"></i>
+                            </button>
+                        </div>
                     </div>
                     <p class="text-sm text-gray-600 mb-4 leading-relaxed">
-                        قم بإدخال بيانات مشروعك على <strong>Supabase</strong>:
+                        قم بإدخال بيانات مشروعك على <strong>Supabase</strong> لحفظ قطع الغيار سحابياً ومشاركتها مع جميع المستخدمين والأجهزة في الوقت الفعلي:
                     </p>
+
+                    <!-- Quick Interactive Visual Guide Panel -->
+                    <div id="setup-guide-panel" class="hidden mb-6 bg-emerald-50/80 border border-emerald-200 rounded-xl p-4 text-sm text-gray-700">
+                        <h4 class="font-bold text-emerald-900 mb-3 flex items-center gap-2 text-base">
+                            <i class="fa-solid fa-list-check text-emerald-600"></i> كيفية إنشاء ربط سحابي مجاني في 3 دقائق:
+                        </h4>
+                        <ol class="space-y-3 list-decimal list-inside pr-1">
+                            <li class="leading-relaxed">
+                                <strong class="text-emerald-900">إنشاء حساب مجاني:</strong> افتح موقع <a href="https://supabase.com" target="_blank" class="text-emerald-700 underline font-bold hover:text-emerald-900">supabase.com <i class="fa-solid fa-external-link-alt text-xs"></i></a> وسجل الدخول مجاناً.
+                            </li>
+                            <li class="leading-relaxed">
+                                <strong class="text-emerald-900">إنشاء مشروع جديد:</strong> اضغط <strong>New Project</strong> واكتب اسم المشروع واكتفي بالخيار المجاني (Free Tier).
+                            </li>
+                            <li class="leading-relaxed">
+                                <strong class="text-emerald-900">جلب بيانات الربط:</strong> من القائمة الجانبية في Supabase اذهب إلى <strong>Project Settings</strong> &larr; <strong>API</strong> وانسخ:
+                                <ul class="list-disc list-inside mr-5 mt-1 text-xs text-gray-600 space-y-1">
+                                    <li><code class="bg-emerald-100 px-1 py-0.5 rounded">Project URL</code> (ألصقه بالخانة الأولى أدناه)</li>
+                                    <li><code class="bg-emerald-100 px-1 py-0.5 rounded">Project API keys (anon / public)</code> (ألصقه بالخانة الثانية أدناه)</li>
+                                </ul>
+                            </li>
+                            <li class="leading-relaxed">
+                                <strong class="text-emerald-900">تجهيز الجدول بضغطة زر:</strong> اضغط على زر <span class="bg-amber-100 text-amber-900 font-bold px-1.5 py-0.5 rounded text-xs">نسخ أوامر إنشاء الجدول SQL</span> أدناه، ثم اذهب في Supabase إلى <strong>SQL Editor</strong> &larr; ألصق الأمر واضغط <strong>Run</strong>.
+                            </li>
+                        </ol>
+                    </div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
@@ -221,16 +251,19 @@
                     </div>
 
                     <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-gray-100">
-                        <div class="flex gap-2">
+                        <div class="flex flex-wrap gap-2">
                             <button onclick="saveSupabaseConfig()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-5 rounded-lg text-sm transition-colors flex items-center gap-2">
                                 <i class="fa-solid fa-check"></i> حفظ واختبار الربط
+                            </button>
+                            <button onclick="syncLocalToCloud()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors flex items-center gap-2">
+                                <i class="fa-solid fa-cloud-arrow-up"></i> رفع المنتجات المحلية للسحاب
                             </button>
                             <button onclick="clearSupabaseConfig()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg text-sm transition-colors">
                                 إزالة وإعادة للتخزين المحلي
                             </button>
                         </div>
                         <button onclick="copySqlSchema()" class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 py-2 px-3 rounded-lg flex items-center gap-1 font-bold">
-                            <i class="fa-solid fa-code"></i> نسخ أومر إنشاء الجدول SQL (في Supabase)
+                            <i class="fa-solid fa-code"></i> نسخ أوامر إنشاء الجدول SQL (في Supabase)
                         </button>
                     </div>
                 </div>
@@ -593,6 +626,46 @@
 
         function toggleSupabaseSettings() {
             supabaseConfigBox.classList.toggle('hidden');
+        }
+
+        function toggleSetupGuide() {
+            const guidePanel = document.getElementById('setup-guide-panel');
+            if (guidePanel) guidePanel.classList.toggle('hidden');
+        }
+
+        async function syncLocalToCloud() {
+            if (!supabaseClient) {
+                showToast('قم بربط وتفعيل Supabase أولاً قبل رفع البيانات', 'error');
+                return;
+            }
+            const localData = localStorage.getItem('canara_products');
+            if (!localData) {
+                showToast('لا توجد منتجات محددة محلياً لنقلها', 'error');
+                return;
+            }
+            const localProducts = JSON.parse(localData);
+            if (!localProducts || localProducts.length === 0) {
+                showToast('قائمة المنتجات المحلية فارغة', 'error');
+                return;
+            }
+
+            let successCount = 0;
+            for (const p of localProducts) {
+                try {
+                    await saveToSupabase({
+                        name: p.name,
+                        type: p.type,
+                        number: p.partNumber,
+                        price: p.price,
+                        imageUrl: p.imageUrl
+                    });
+                    successCount++;
+                } catch (e) {
+                    console.warn("Migration item skipped/errored:", p.name, e);
+                }
+            }
+            showToast(`تم رفع ${successCount} منتج بنجاح إلى قاعدة البيانات السحابية!`);
+            loadProducts();
         }
 
         function saveSupabaseConfig() {
