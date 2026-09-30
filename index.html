@@ -242,7 +242,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
                             <label class="block text-xs font-bold text-gray-700 mb-1">Project URL (رابط المشروع)</label>
-                            <input type="text" id="cfg-supabase-url" placeholder="https://xyz.supabase.co" class="w-full p-2.5 border border-gray-300 rounded focus:ring-2 focus:ring-emerald-500 text-sm font-mono" dir="ltr">
+                            <input type="text" id="cfg-supabase-url" onblur="autoCleanSupabaseUrl()" placeholder="https://xyz.supabase.co" class="w-full p-2.5 border border-gray-300 rounded focus:ring-2 focus:ring-emerald-500 text-sm font-mono" dir="ltr">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-gray-700 mb-1">Publishable Key / Anon Key (مفتاح العميل)</label>
@@ -255,8 +255,8 @@
                             <button onclick="saveSupabaseConfig()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-5 rounded-lg text-sm transition-colors flex items-center gap-2">
                                 <i class="fa-solid fa-check"></i> حفظ واختبار الربط
                             </button>
-                            <button onclick="syncLocalToCloud()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors flex items-center gap-2">
-                                <i class="fa-solid fa-cloud-arrow-up"></i> رفع المنتجات المحلية للسحاب
+                            <button id="sync-cloud-btn" onclick="syncLocalToCloud()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors flex items-center gap-2">
+                                <i class="fa-solid fa-cloud-arrow-up"></i> رفع المنتجات الحالية للسحاب
                             </button>
                             <button onclick="clearSupabaseConfig()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg text-sm transition-colors">
                                 إزالة وإعادة للتخزين المحلي
@@ -279,8 +279,12 @@
                                     <input type="text" id="new-name" class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-canara-yellow" required placeholder="مثال: فلتر زيت هيدروليك">
                                 </div>
                                 <div class="mb-4">
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">الماركة / البراند (Brand)</label>
-                                    <input type="text" id="new-type" class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-canara-yellow" required placeholder="مثال: ITR, FP, CTP, CAT, Komatsu...">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">صورة شعار البراند / الماركة (رابط مباشر)</label>
+                                    <input type="text" id="new-type" oninput="updateBrandPreview()" class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-canara-yellow font-sans text-left text-sm" dir="ltr" required placeholder="ألصق رابط صورة شعار البراند هنا (https://...)">
+                                    <div id="brand-preview-container" class="mt-2 flex items-center gap-2 hidden">
+                                        <span class="text-xs text-gray-500">معاينة الشعار:</span>
+                                        <img id="brand-preview" src="" alt="معاينة شعار الماركة" class="h-8 max-w-[120px] object-contain border p-1 rounded bg-white shadow-sm">
+                                    </div>
                                 </div>
                                 <div class="mb-4">
                                     <label class="block text-sm font-medium text-gray-700 mb-1">رقم القطعة (Part Number)</label>
@@ -367,12 +371,12 @@
     <!-- JavaScript Logic -->
     <script>
         const defaultProducts = [
-            { id: '1', name: 'مضخة هيدروليكية رئيسية', type: 'ITR', partNumber: 'CA-98765', price: 3500, imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Hydraulic+Pump' },
-            { id: '2', name: 'فلتر زيت محرك', type: 'CAT', partNumber: '1R-1808', price: 180, imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Oil+Filter' },
-            { id: '3', name: 'جنزير حفارة كامل', type: 'ITR', partNumber: 'TRK-452', price: 4200, imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Track+Chain' },
-            { id: '4', name: 'طقم ربلات (Seal Kit)', type: 'FP', partNumber: 'SK-2099', price: 450, imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Seal+Kit' },
-            { id: '5', name: 'ترس دوران (Swing Gear)', type: 'CTP', partNumber: 'SG-112', price: 2800, imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Swing+Gear' },
-            { id: '6', name: 'مسمار وجلبة بوكت', type: 'Komatsu', partNumber: 'PB-009', price: 220, imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Pin+%26+Bushing' }
+            { id: '1', name: 'مضخة هيدروليكية رئيسية', type: 'https://placehold.co/120x40/111111/FFC000?text=ITR', partNumber: 'CA-98765', price: 3500, imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Hydraulic+Pump' },
+            { id: '2', name: 'فلتر زيت محرك', type: 'https://placehold.co/120x40/111111/FFC000?text=CAT', partNumber: '1R-1808', price: 180, imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Oil+Filter' },
+            { id: '3', name: 'جنزير حفارة كامل', type: 'https://placehold.co/120x40/111111/FFC000?text=ITR', partNumber: 'TRK-452', price: 4200, imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Track+Chain' },
+            { id: '4', name: 'طقم ربلات (Seal Kit)', type: 'https://placehold.co/120x40/111111/FFC000?text=FP', partNumber: 'SK-2099', price: 450, imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Seal+Kit' },
+            { id: '5', name: 'ترس دوران (Swing Gear)', type: 'https://placehold.co/120x40/111111/FFC000?text=CTP', partNumber: 'SG-112', price: 2800, imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Swing+Gear' },
+            { id: '6', name: 'مسمار وجلبة بوكت', type: 'https://placehold.co/120x40/111111/FFC000?text=Komatsu', partNumber: 'PB-009', price: 220, imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Pin+%26+Bushing' }
         ];
 
         let SUPABASE_URL = localStorage.getItem('canara_sp_url') || '';
@@ -406,7 +410,20 @@
                 const parsed = new URL(cleaned);
                 return parsed.origin;
             } catch (e) {
-                return cleaned.split('/rest/v1')[0].replace(/\/+$/, '');
+                return cleaned.replace(/\/rest\/v1\/?$/i, '').replace(/\/+$/, '');
+            }
+        }
+
+        function autoCleanSupabaseUrl() {
+            const input = document.getElementById('cfg-supabase-url');
+            if (!input) return;
+            const original = input.value.trim();
+            if (original) {
+                const cleaned = sanitizeUrl(original);
+                if (cleaned !== original) {
+                    input.value = cleaned;
+                    showToast('تم تصحيح رابط Supabase تلقائياً وإزالة /rest/v1/', 'success');
+                }
             }
         }
 
@@ -458,7 +475,7 @@
 
             const localData = localStorage.getItem('canara_products');
             if (localData) {
-                products = JSON.parse(localData);
+                try { products = JSON.parse(localData); } catch (e) { products = defaultProducts; }
             } else {
                 products = defaultProducts;
                 localStorage.setItem('canara_products', JSON.stringify(products));
@@ -510,10 +527,10 @@
                 const card = document.createElement('div');
                 card.className = 'bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 card-hover flex flex-col h-full';
                 
-                const productBrand = product.type || 'غير محدد';
+                const productBrand = product.type || '';
                 const formattedPrice = product.price ? Number(product.price).toLocaleString('en-US') : 'حسب الطلب';
                 const waNumber = "966567618315";
-                const waMessage = encodeURIComponent(`مرحباً شركة كنارة، أود الاستفسار عن القطعة التالية:\nالاسم: ${product.name}\nالبراند: ${productBrand}\nرقم القطعة: ${product.partNumber}\nالسعر المعلن: ${product.price ? product.price + ' ريال' : 'غير محدد'}`);
+                const waMessage = encodeURIComponent(`مرحباً شركة كنارة، أود الاستفسار عن القطعة التالية:\nالاسم: ${product.name}\nرقم القطعة: ${product.partNumber}\nالسعر المعلن: ${product.price ? product.price + ' ريال' : 'غير محدد'}`);
                 const waUrl = `https://wa.me/${waNumber}?text=${waMessage}`;
 
                 card.innerHTML = `
@@ -522,20 +539,19 @@
                         <div class="absolute top-2 right-2 bg-canara-dark text-canara-yellow text-xs font-bold px-2 py-1 rounded shadow" dir="ltr">
                             ${product.partNumber}
                         </div>
-                        <div class="absolute top-2 left-2 bg-amber-400 text-canara-dark text-xs font-extrabold px-2.5 py-1 rounded-full shadow-md flex items-center gap-1 border border-amber-300">
-                            <i class="fa-solid fa-copyright text-[10px]"></i>
-                            <span>${productBrand}</span>
+                        <div class="absolute top-2 left-2 bg-white/95 p-1 px-2 rounded-lg shadow-md border border-gray-200 flex items-center justify-center">
+                            <img src="${productBrand}" alt="شعار البراند" class="h-5 max-w-[85px] object-contain" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'text-xs font-bold text-gray-700\'>${productBrand || 'غير محدد'}</span>'">
                         </div>
                     </div>
                     <div class="p-4 flex-grow flex flex-col justify-between">
                         <div>
                             <h4 class="font-bold text-gray-800 text-lg mb-2 leading-tight">${product.name}</h4>
                             
-                            <div class="bg-amber-50 border border-amber-200 rounded-lg p-2 mb-3 flex items-center justify-between">
+                            <div class="bg-amber-50/70 border border-amber-200/80 rounded-lg p-2 mb-3 flex items-center justify-between">
                                 <span class="text-xs text-gray-600 font-medium">البراند / الماركة:</span>
-                                <span class="text-xs font-extrabold text-amber-900 bg-amber-200/80 px-2.5 py-0.5 rounded-md flex items-center gap-1">
-                                    <i class="fa-solid fa-shield-halved text-[10px] text-amber-700"></i> ${productBrand}
-                                </span>
+                                <div class="h-7 px-2 py-0.5 bg-white border border-amber-200 rounded-md flex items-center justify-center shadow-sm">
+                                    <img src="${productBrand}" alt="الماركة" class="h-5 max-w-[100px] object-contain" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'text-xs font-bold text-amber-900\'>${productBrand || 'غير محدد'}</span>'">
+                                </div>
                             </div>
 
                             <div class="flex justify-between items-center mt-2 pt-2 border-t border-gray-100">
@@ -610,13 +626,12 @@
             adminView.classList.remove('hidden');
             renderAdminList();
             
-            document.getElementById('cfg-supabase-url').value = SUPABASE_URL;
+            document.getElementById('cfg-supabase-url').value = sanitizeUrl(SUPABASE_URL);
             document.getElementById('cfg-supabase-key').value = SUPABASE_KEY;
         }
 
         function logoutAdmin() {
             isAdminLoggedIn = false;
-            // مسح الهاش من الرابط عند تسجيل الخروج
             if (window.location.hash.toUpperCase().includes('ADMIN')) {
                 history.pushState("", document.title, window.location.pathname + window.location.search);
             }
@@ -638,37 +653,64 @@
                 showToast('قم بربط وتفعيل Supabase أولاً قبل رفع البيانات', 'error');
                 return;
             }
-            const localData = localStorage.getItem('canara_products');
-            if (!localData) {
-                showToast('لا توجد منتجات محددة محلياً لنقلها', 'error');
+
+            let itemsToSync = products && products.length > 0 ? products : [];
+            if (itemsToSync.length === 0) {
+                const localData = localStorage.getItem('canara_products');
+                if (localData) {
+                    try { itemsToSync = JSON.parse(localData); } catch (e) {}
+                }
+            }
+            if (itemsToSync.length === 0) {
+                itemsToSync = defaultProducts;
+            }
+
+            if (!itemsToSync || itemsToSync.length === 0) {
+                showToast('لا توجد قطع غيار متاحة لرفعها', 'error');
                 return;
             }
-            const localProducts = JSON.parse(localData);
-            if (!localProducts || localProducts.length === 0) {
-                showToast('قائمة المنتجات المحلية فارغة', 'error');
-                return;
+
+            const syncBtn = document.getElementById('sync-cloud-btn');
+            if (syncBtn) {
+                syncBtn.disabled = true;
+                syncBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الرفع...';
             }
 
             let successCount = 0;
-            for (const p of localProducts) {
+            let lastError = null;
+
+            for (const p of itemsToSync) {
                 try {
                     await saveToSupabase({
-                        name: p.name,
-                        type: p.type,
-                        number: p.partNumber,
-                        price: p.price,
-                        imageUrl: p.imageUrl
+                        name: p.name || 'بدون اسم',
+                        type: p.type || '',
+                        number: p.partNumber || p.part_number || '',
+                        price: p.price || 0,
+                        imageUrl: p.imageUrl || p.image_url || ''
                     });
                     successCount++;
                 } catch (e) {
-                    console.warn("Migration item skipped/errored:", p.name, e);
+                    console.warn("Sync item error:", p.name, e);
+                    lastError = e.message;
                 }
             }
-            showToast(`تم رفع ${successCount} منتج بنجاح إلى قاعدة البيانات السحابية!`);
-            loadProducts();
+
+            if (syncBtn) {
+                syncBtn.disabled = false;
+                syncBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> رفع المنتجات الحالية للسحاب';
+            }
+
+            if (successCount > 0) {
+                showToast(`تم رفع ${successCount} منتج بنجاح إلى قاعدة البيانات السحابية!`);
+                await loadProducts();
+            } else if (lastError) {
+                showToast(`تعذر الرفع: ${lastError}`, 'error');
+            } else {
+                showToast('لم يتم رفع أي منتج. أعد التأكد من إنشاء الجدول وصلاحياته بـ Supabase', 'error');
+            }
         }
 
-        function saveSupabaseConfig() {
+        async function saveSupabaseConfig() {
             const rawUrl = document.getElementById('cfg-supabase-url').value.trim();
             const key = document.getElementById('cfg-supabase-key').value.trim();
 
@@ -678,13 +720,34 @@
             }
 
             const cleanUrl = sanitizeUrl(rawUrl);
+            document.getElementById('cfg-supabase-url').value = cleanUrl;
 
             SUPABASE_URL = cleanUrl;
             SUPABASE_KEY = key;
             localStorage.setItem('canara_sp_url', cleanUrl);
             localStorage.setItem('canara_sp_key', key);
 
-            showToast('تم حفظ واختبار إعدادات Supabase بنجاح');
+            initSupabase();
+
+            if (supabaseClient) {
+                try {
+                    const { data, error } = await supabaseClient.from('products').select('id').limit(1);
+                    if (error) {
+                        if (error.code === '42P01' || error.message?.includes('does not exist')) {
+                            showToast('تم حفظ الربط، ولكن جدول (products) غير موجود بالـ Supabase! انقر زر (نسخ كود SQL) ثم اشغله بـ Supabase', 'error');
+                        } else if (error.code === '42501' || error.message?.includes('row-level security')) {
+                            showToast('تم الاتصال ولكن ينقص تفعيل صلاحيات RLS. يرجى نسخ كود SQL وتشغيله بـ Supabase', 'error');
+                        } else {
+                            showToast(`تنبيه من Supabase: ${error.message}`, 'error');
+                        }
+                    } else {
+                        showToast('تم الاتصال بـ Supabase بنجاح وجدول المنتجات جاهز للعمل!');
+                    }
+                } catch (e) {
+                    showToast('تم حفظ الإعدادات، يرجى التأكد من صحة المفتاح والرابط', 'error');
+                }
+            }
+
             loadProducts();
             toggleSupabaseSettings();
         }
@@ -703,8 +766,8 @@
 
         function copySqlSchema() {
             const sql = `
--- إنشاء جدول قطع الغيار بصيغ حقول مرنة وStandard PostgreSQL
-CREATE TABLE IF NOT EXISTS products (
+-- 1. إنشاء جدول قطع الغيار بصيغة متوافقة
+CREATE TABLE IF NOT EXISTS public.products (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     created_at TIMESTAMPTZ DEFAULT now(),
     name TEXT NOT NULL,
@@ -716,23 +779,26 @@ CREATE TABLE IF NOT EXISTS products (
     imageurl TEXT
 );
 
--- تحديث أعمدة الجدول إذا كان موجوداً مسبقاً
-ALTER TABLE products ADD COLUMN IF NOT EXISTS part_number TEXT;
-ALTER TABLE products ADD COLUMN IF NOT EXISTS partnumber TEXT;
-ALTER TABLE products ADD COLUMN IF NOT EXISTS image_url TEXT;
-ALTER TABLE products ADD COLUMN IF NOT EXISTS imageurl TEXT;
+-- 2. التأكد من وجود كافة الأعمدة المطلوبة
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS type TEXT;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS part_number TEXT;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS partnumber TEXT;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS price NUMERIC;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS image_url TEXT;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS imageurl TEXT;
 
--- تفعيل صلاحيات القراءة والكتابة العامة (RLS)
-ALTER TABLE products ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Public Read Access" ON products;
-DROP POLICY IF EXISTS "Public Insert Access" ON products;
-DROP POLICY IF EXISTS "Public Update Access" ON products;
-DROP POLICY IF EXISTS "Public Delete Access" ON products;
+-- 3. تفعيل وإعداد صلاحيات RLS للقراءة والكتابة بدون قيود
+ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Public Read Access" ON products FOR SELECT USING (true);
-CREATE POLICY "Public Insert Access" ON products FOR INSERT WITH CHECK (true);
-CREATE POLICY "Public Update Access" ON products FOR UPDATE USING (true);
-CREATE POLICY "Public Delete Access" ON products FOR DELETE USING (true);
+DROP POLICY IF EXISTS "Public Read Access" ON public.products;
+DROP POLICY IF EXISTS "Public Insert Access" ON public.products;
+DROP POLICY IF EXISTS "Public Update Access" ON public.products;
+DROP POLICY IF EXISTS "Public Delete Access" ON public.products;
+
+CREATE POLICY "Public Read Access" ON public.products FOR SELECT USING (true);
+CREATE POLICY "Public Insert Access" ON public.products FOR INSERT WITH CHECK (true);
+CREATE POLICY "Public Update Access" ON public.products FOR UPDATE USING (true);
+CREATE POLICY "Public Delete Access" ON public.products FOR DELETE USING (true);
             `.trim();
 
             navigator.clipboard.writeText(sql).then(() => {
@@ -761,7 +827,10 @@ CREATE POLICY "Public Delete Access" ON products FOR DELETE USING (true);
                     </td>
                     <td class="p-3">
                         <div class="font-medium text-gray-800">${product.name}</div>
-                        <div class="text-xs text-amber-800 mt-0.5"><i class="fa-solid fa-tag text-[10px] ml-1"></i>${product.type || 'غير محدد'}</div>
+                        <div class="mt-1 flex items-center gap-1.5">
+                            <span class="text-[10px] text-gray-400">البراند:</span>
+                            <img src="${product.type}" class="h-5 max-w-[80px] object-contain border rounded bg-white p-0.5" onerror="this.onerror=null; this.outerHTML='<span class=\'text-xs text-amber-800 font-bold\'>${product.type || 'غير محدد'}</span>'">
+                        </div>
                     </td>
                     <td class="p-3">
                         <span class="font-mono text-sm bg-gray-100 px-2 py-1 rounded" dir="ltr">${product.partNumber}</span>
@@ -793,6 +862,7 @@ CREATE POLICY "Public Delete Access" ON products FOR DELETE USING (true);
             document.getElementById('new-price').value = product.price || '';
             document.getElementById('new-image').value = product.imageUrl;
             updateImagePreview();
+            updateBrandPreview();
             
             document.getElementById('form-title').textContent = 'تعديل بيانات المنتج';
             document.getElementById('submit-btn-text').textContent = 'حفظ التعديلات';
@@ -805,9 +875,28 @@ CREATE POLICY "Public Delete Access" ON products FOR DELETE USING (true);
             const fileInput = document.getElementById('image-file-input');
             if (fileInput) fileInput.value = '';
             updateImagePreview();
+            updateBrandPreview();
             document.getElementById('form-title').textContent = 'إضافة منتج جديد';
             document.getElementById('submit-btn-text').textContent = 'إضافة المنتج';
             document.getElementById('cancel-edit-btn').classList.add('hidden');
+        }
+
+        function updateBrandPreview() {
+            const inputVal = document.getElementById('new-type').value.trim();
+            const previewContainer = document.getElementById('brand-preview-container');
+            const previewImg = document.getElementById('brand-preview');
+
+            if (inputVal) {
+                const formattedUrl = formatImageUrl(inputVal);
+                previewImg.src = formattedUrl;
+                previewContainer.classList.remove('hidden');
+                previewImg.onerror = () => {
+                    previewImg.src = 'https://placehold.co/120x40/FFFFFF/999999?text=Logo+Error';
+                };
+            } else {
+                previewImg.src = '';
+                previewContainer.classList.add('hidden');
+            }
         }
 
         function formatImageUrl(url) {
@@ -867,100 +956,68 @@ CREATE POLICY "Public Delete Access" ON products FOR DELETE USING (true);
         async function saveToSupabase(payloadRaw, editingId) {
             if (!supabaseClient) throw new Error("Supabase غير متصل");
 
-            const possiblePartKeys = ['part_number', 'partnumber', 'partNumber', 'part_no'];
-            const possibleImageKeys = ['image_url', 'imageurl', 'imageUrl', 'image', 'photo'];
-
-            // Inspect keys from existing loaded items if available
-            let knownKeys = new Set();
-            if (products && products.length > 0) {
-                products.forEach(p => {
-                    if (p._rawKeys) {
-                        p._rawKeys.forEach(k => knownKeys.add(k));
-                    }
-                });
-            }
-
-            let candidate = {
+            const candidate = {
                 name: payloadRaw.name,
                 type: payloadRaw.type,
-                price: payloadRaw.price
+                part_number: payloadRaw.number,
+                partnumber: payloadRaw.number,
+                price: Number(payloadRaw.price) || 0,
+                image_url: payloadRaw.imageUrl,
+                imageurl: payloadRaw.imageUrl
             };
 
-            // Select initial keys based on existing columns or fallback
-            let initialPartKey = possiblePartKeys.find(k => knownKeys.has(k)) || 'part_number';
-            candidate[initialPartKey] = payloadRaw.number;
-
-            let initialImgKey = possibleImageKeys.find(k => knownKeys.has(k)) || 'image_url';
-            candidate[initialImgKey] = payloadRaw.imageUrl;
-
-            let attemptedKeys = new Set();
-            let maxAttempts = 10;
-
-            while (maxAttempts > 0) {
-                maxAttempts--;
-                let res;
-                try {
-                    if (editingId) {
-                        res = await supabaseClient.from('products').update(candidate).eq('id', editingId);
-                    } else {
-                        res = await supabaseClient.from('products').insert([candidate]);
-                    }
-                } catch (e) {
-                    res = { error: e };
-                }
-
-                if (!res.error) {
-                    return true;
-                }
-
-                const err = res.error;
-                console.warn("Supabase attempt returned error:", err);
-
-                const msg = (err.message || err.details || '').toString();
-                const missingColMatch = msg.match(/Could not find the '([^']+)' column/i) || 
-                                        msg.match(/column "?([^"]+)"? does not exist/i);
-
-                if (missingColMatch && missingColMatch[1]) {
-                    const badCol = missingColMatch[1];
-                    attemptedKeys.add(badCol);
-                    delete candidate[badCol];
-
-                    // Replace with alternative column name if available
-                    if (possiblePartKeys.includes(badCol)) {
-                        const nextPartKey = possiblePartKeys.find(k => !attemptedKeys.has(k));
-                        if (nextPartKey) candidate[nextPartKey] = payloadRaw.number;
-                    }
-
-                    if (possibleImageKeys.includes(badCol)) {
-                        const nextImgKey = possibleImageKeys.find(k => !attemptedKeys.has(k));
-                        if (nextImgKey) candidate[nextImgKey] = payloadRaw.imageUrl;
-                    }
-
-                    continue; // Retry loop
-                }
-
-                // If error is not a column mismatch, format readable error message
-                let userError = err.message || 'خطأ أثناء الحفظ في Supabase';
-                if (err.details) userError += ` (${err.details})`;
-                throw new Error(userError);
+            let res;
+            if (editingId) {
+                res = await supabaseClient.from('products').update(candidate).eq('id', editingId);
+            } else {
+                res = await supabaseClient.from('products').insert([candidate]);
             }
 
-            throw new Error("تراكيب الأعمدة في جدول Supabase تتطلب تحديثاً. اضغط على 'نسخ كود SQL' لتنفيذه بـ Supabase.");
+            if (res.error) {
+                const simpleCandidate = {
+                    name: payloadRaw.name,
+                    type: payloadRaw.type,
+                    part_number: payloadRaw.number,
+                    price: Number(payloadRaw.price) || 0,
+                    image_url: payloadRaw.imageUrl
+                };
+                
+                let fallbackRes;
+                if (editingId) {
+                    fallbackRes = await supabaseClient.from('products').update(simpleCandidate).eq('id', editingId);
+                } else {
+                    fallbackRes = await supabaseClient.from('products').insert([simpleCandidate]);
+                }
+
+                if (fallbackRes.error) {
+                    const err = fallbackRes.error;
+                    if (err.code === '42P01' || err.message?.includes('does not exist')) {
+                        throw new Error('جدول products غير موجود بالـ Supabase. يرجى الضغط على زر "نسخ كود SQL" وتشغيله في Supabase.');
+                    }
+                    if (err.code === '42501' || err.message?.includes('row-level security')) {
+                        throw new Error('تم منع الحفظ بسبب صلاحيات RLS. يرجى نسخ كود SQL وتشغيله بـ Supabase لتفعيل الصلاحيات.');
+                    }
+                    throw new Error(err.message || 'خطأ أثناء الحفظ في Supabase');
+                }
+            }
+
+            return true;
         }
 
         async function handleAddProduct(e) {
             e.preventDefault();
             const name = document.getElementById('new-name').value.trim();
-            const type = document.getElementById('new-type').value.trim();
+            const rawType = document.getElementById('new-type').value.trim();
             const number = document.getElementById('new-number').value.trim();
             const price = document.getElementById('new-price').value.trim();
             const rawImageUrl = document.getElementById('new-image').value.trim();
 
-            if (!name || !type || !number || !price || !rawImageUrl) {
-                showToast('الرجاء تعبئة جميع الحقول وإضافة صورة', 'error');
+            if (!name || !rawType || !number || !price || !rawImageUrl) {
+                showToast('الرجاء تعبئة جميع الحقول وإضافة رابط صورة المنتج وشعار البراند', 'error');
                 return;
             }
 
+            const type = formatImageUrl(rawType);
             const imageUrl = formatImageUrl(rawImageUrl);
 
             const submitBtn = document.getElementById('submit-btn');
