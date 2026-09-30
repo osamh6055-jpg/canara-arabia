@@ -382,11 +382,11 @@
                     if (!error && data) {
                         products = data.map(item => ({
                             id: item.id ? String(item.id) : (item.partNumber || item.partnumber || item.part_number),
-                            name: item.name,
+                            name: item.name || '',
                             type: item.type || item.brand || '',
-                            partNumber: item.partNumber || item.partnumber || item.part_number,
-                            price: item.price,
-                            imageUrl: item.imageUrl || item.imageurl || item.image_url
+                            partNumber: item.partNumber || item.partnumber || item.part_number || '',
+                            price: item.price || 0,
+                            imageUrl: item.imageUrl || item.imageurl || item.image_url || ''
                         }));
                         renderUserGrid();
                         if (isAdminLoggedIn) renderAdminList();
@@ -603,20 +603,16 @@
 
         function copySqlSchema() {
             const sql = `
--- إنشاء جدول قطع الغيار بصيغ حقول مرنة
 CREATE TABLE IF NOT EXISTS products (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     created_at TIMESTAMPTZ DEFAULT now(),
     name TEXT NOT NULL,
     type TEXT NOT NULL,
-    "partNumber" TEXT UNIQUE,
-    partnumber TEXT,
+    partnumber TEXT UNIQUE,
     price NUMERIC NOT NULL,
-    "imageUrl" TEXT,
     imageurl TEXT
 );
 
--- تفعيل صلاحيات القراءة والكتابة العامة
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Public Read Access" ON products;
 DROP POLICY IF EXISTS "Public Insert Access" ON products;
@@ -630,7 +626,7 @@ CREATE POLICY "Public Delete Access" ON products FOR DELETE USING (true);
             `.trim();
 
             navigator.clipboard.writeText(sql).then(() => {
-                showToast('تم نسخ كود SQL بنجاح! الصقه في SQL Editor بـ Supabase');
+                showToast('تم نسخ كود SQL بنجاح!');
             }).catch(() => {
                 showToast('فشل النسخ التلقائي، يمكنك نسخ الكود يدويًا', 'error');
             });
@@ -700,6 +696,56 @@ CREATE POLICY "Public Delete Access" ON products FOR DELETE USING (true);
             document.getElementById('cancel-edit-btn').classList.add('hidden');
         }
 
+        // Helper function for automatic multi-schema fallback insert/update
+        async function saveToSupabase(payloadRaw, editingId = null) {
+            // Attempt 1: Default unquoted Postgres column names (lowercase)
+            const lowerPayload = {
+                name: payloadRaw.name,
+                type: payloadRaw.type,
+                partnumber: payloadRaw.partNumber,
+                price: Number(payloadRaw.price),
+                imageurl: payloadRaw.imageUrl
+            };
+
+            let res = editingId 
+                ? await supabaseClient.from('products').update(lowerPayload).eq('id', editingId)
+                : await supabaseClient.from('products').insert([lowerPayload]);
+
+            if (!res.error) return res;
+
+            // Attempt 2: Quoted CamelCase column names ("partNumber", "imageUrl")
+            const camelPayload = {
+                name: payloadRaw.name,
+                type: payloadRaw.type,
+                partNumber: payloadRaw.partNumber,
+                price: Number(payloadRaw.price),
+                imageUrl: payloadRaw.imageUrl
+            };
+
+            res = editingId 
+                ? await supabaseClient.from('products').update(camelPayload).eq('id', editingId)
+                : await supabaseClient.from('products').insert([camelPayload]);
+
+            if (!res.error) return res;
+
+            // Attempt 3: SnakeCase column names ("part_number", "image_url")
+            const snakePayload = {
+                name: payloadRaw.name,
+                type: payloadRaw.type,
+                part_number: payloadRaw.partNumber,
+                price: Number(payloadRaw.price),
+                image_url: payloadRaw.imageUrl
+            };
+
+            res = editingId 
+                ? await supabaseClient.from('products').update(snakePayload).eq('id', editingId)
+                : await supabaseClient.from('products').insert([snakePayload]);
+
+            if (!res.error) return res;
+
+            throw res.error;
+        }
+
         async function handleAddProduct(e) {
             e.preventDefault();
             const name = document.getElementById('new-name').value.trim();
@@ -719,33 +765,11 @@ CREATE POLICY "Public Delete Access" ON products FOR DELETE USING (true);
 
             try {
                 if (supabaseClient) {
-                    // Send flexible payload matching multiple column naming conventions
-                    const payload = {
-                        name,
-                        type,
-                        partNumber: number,
-                        partnumber: number,
-                        price: Number(price),
-                        imageUrl: imageUrl,
-                        imageurl: imageUrl
-                    };
-
-                    if (editingProductId) {
-                        const { error } = await supabaseClient
-                            .from('products')
-                            .update(payload)
-                            .eq('id', editingProductId);
-
-                        if (error) throw error;
-                        showToast('تم التعديل في Supabase بنجاح');
-                    } else {
-                        const { error } = await supabaseClient
-                            .from('products')
-                            .insert([payload]);
-
-                        if (error) throw error;
-                        showToast('تم إضافة المنتج في Supabase بنجاح');
-                    }
+                    const rawData = { name, type, partNumber: number, price, imageUrl };
+                    
+                    await saveToSupabase(rawData, editingProductId);
+                    
+                    showToast(editingProductId ? 'تم تعديل المنتج في Supabase بنجاح' : 'تم إضافة المنتج في Supabase بنجاح');
                     await loadProducts();
                     cancelEdit();
                 } else {
@@ -774,7 +798,7 @@ CREATE POLICY "Public Delete Access" ON products FOR DELETE USING (true);
                 }
             } catch (err) {
                 console.error("Save error:", err);
-                showToast(`خطأ في الحفظ: ${err.message || 'تأكد من الاتصال ورابط المشروع'}`, 'error');
+                showToast(`خطأ في الحفظ: ${err.message || 'تأكد من الاتصال بالمشروع'}`, 'error');
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.classList.remove('opacity-50');
@@ -807,16 +831,3 @@ CREATE POLICY "Public Delete Access" ON products FOR DELETE USING (true);
             const fullUrl = decodeURIComponent(window.location.href).toUpperCase();
             
             if (hash.includes('ADMIN-PANEL') || hash.includes('ADMIN_PANEL') || hash.includes('ADMIN') || fullUrl.includes('ADMIN-PANEL') || fullUrl.includes('ADMIN_PANEL')) {
-                openLoginModal();
-            }
-        }
-
-        window.onload = () => {
-            loadProducts();
-            checkAdminUrl();
-        };
-
-        window.addEventListener('hashchange', checkAdminUrl);
-    </script>
-</body>
-</html>
