@@ -5,12 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>شركة كنارة العربية - دليل قطع الغيار</title>
     
+    <!-- Favicon -->
     <link rel="icon" type="image/png" href="https://i.postimg.cc/prcB96RP/efa50bdf-396f-46d0-a13f-4938e45656a4.png">
     
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Supabase JS Client v2 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script>
@@ -84,10 +87,11 @@
                     <p class="text-xs text-canara-yellow uppercase tracking-widest">Canara Arabia Company</p>
                 </div>
             </div>
-            <div class="flex items-center gap-2"></div>
+            <!-- تم إخفاء زر لوحة التحكم عن الزوار العاديين -->
         </div>
     </header>
 
+    <!-- Toast Notifications Container -->
     <div id="toast-container" class="fixed bottom-5 left-1/2 transform -translate-x-1/2 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
     <!-- Login Modal -->
@@ -117,8 +121,10 @@
         </div>
     </div>
 
+    <!-- Main Content Area -->
     <main class="flex-grow flex flex-col">
         
+        <!-- USER VIEW -->
         <div id="user-view" class="flex-grow flex flex-col">
             <!-- Hero Search Section -->
             <section class="hero-pattern py-16 px-4 relative overflow-hidden">
@@ -170,6 +176,7 @@
             </section>
         </div>
 
+        <!-- ADMIN VIEW -->
         <div id="admin-view" class="hidden flex-grow bg-gray-100 p-4 md:p-8">
             <div class="container mx-auto max-w-6xl">
                 <!-- Header Control -->
@@ -199,7 +206,7 @@
                         </button>
                     </div>
                     <p class="text-sm text-gray-600 mb-4 leading-relaxed">
-                        قم بإدخال بيانات مشروعك على <strong>Supabase</strong> (سيتم تنقية الرابط تلقائياً لحذف أي مسار إضافي):
+                        قم بإدخال بيانات مشروعك على <strong>Supabase</strong>:
                     </p>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -222,14 +229,14 @@
                                 إزالة وإعادة للتخزين المحلي
                             </button>
                         </div>
-                        <button onclick="copySqlSchema()" class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 py-2 px-3 rounded-lg flex items-center gap-1">
+                        <button onclick="copySqlSchema()" class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 py-2 px-3 rounded-lg flex items-center gap-1 font-bold">
                             <i class="fa-solid fa-code"></i> نسخ أومر إنشاء الجدول SQL (في Supabase)
                         </button>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <!-- Add Product Form -->
+                    <!-- Add/Edit Product Form -->
                     <div class="lg:col-span-1">
                         <div class="bg-white rounded-xl shadow-md p-6 sticky top-6">
                             <h3 id="form-title" class="text-lg font-bold mb-4 border-b pb-2">إضافة منتج جديد</h3>
@@ -253,7 +260,7 @@
                                 <div class="mb-6">
                                     <label class="block text-sm font-medium text-gray-700 mb-1">صورة المنتج (رابط مباشر أو رفع ملف)</label>
                                     <div class="space-y-3">
-                                        <input type="text" id="new-image" oninput="updateImagePreview()" class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-canara-yellow font-sans text-left text-sm" dir="ltr" required placeholder="https://example.com/image.jpg أو إلصق رابط الصورة">
+                                        <input type="text" id="new-image" oninput="updateImagePreview()" class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-canara-yellow font-sans text-left text-sm" dir="ltr" required placeholder="ألصق رابط الصورة مباشرة...">
                                         <div class="flex items-center gap-2">
                                             <span class="text-xs text-gray-500">أو رفع صورة من جهازك:</span>
                                             <label class="cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold py-1.5 px-3 rounded border border-gray-300 flex items-center gap-1 transition-colors">
@@ -266,7 +273,6 @@
                                             <p id="preview-placeholder" class="text-xs text-gray-400">معاينة الصورة ستظهر هنا</p>
                                         </div>
                                     </div>
-                                    <p class="text-xs text-gray-400 mt-1">يمكنك إدخال رابط مباشر للصورة أو اختيار صورة من جهازك.</p>
                                 </div>
                                 <div class="flex gap-2">
                                     <button type="submit" id="submit-btn" class="flex-1 bg-canara-dark text-canara-yellow font-bold py-2.5 px-4 rounded hover:bg-gray-800 transition-colors flex justify-center items-center gap-2">
@@ -311,6 +317,7 @@
 
     </main>
 
+    <!-- Footer Section -->
     <footer class="bg-canara-dark text-gray-400 py-8 border-t border-gray-800">
         <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
@@ -324,8 +331,8 @@
         </div>
     </footer>
 
+    <!-- JavaScript Logic -->
     <script>
-        // Default Mock Data
         const defaultProducts = [
             { id: '1', name: 'مضخة هيدروليكية رئيسية', type: 'ITR', partNumber: 'CA-98765', price: 3500, imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Hydraulic+Pump' },
             { id: '2', name: 'فلتر زيت محرك', type: 'CAT', partNumber: '1R-1808', price: 180, imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Oil+Filter' },
@@ -343,6 +350,7 @@
         let isAdminLoggedIn = false;
         let editingProductId = null;
 
+        // DOM Element references
         const userView = document.getElementById('user-view');
         const adminView = document.getElementById('admin-view');
         const loginModal = document.getElementById('login-modal');
@@ -355,7 +363,6 @@
         const dbSourceBadge = document.getElementById('db-source-text');
         const supabaseConfigBox = document.getElementById('supabase-config-box');
 
-        // Clean & Format URL to ensure valid origin without paths
         function sanitizeUrl(rawUrl) {
             if (!rawUrl) return '';
             let cleaned = rawUrl.trim();
@@ -393,20 +400,23 @@
                 try {
                     const { data, error } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
                     if (!error && data) {
-                        products = data.map(item => ({
-                            id: item.id ? String(item.id) : (item.partNumber || item.partnumber || item.part_number),
-                            name: item.name,
-                            type: item.type || item.brand || '',
-                            partNumber: item.partNumber || item.partnumber || item.part_number,
-                            price: item.price,
-                            imageUrl: item.imageUrl || item.imageurl || item.image_url
-                        }));
+                        products = data.map(item => {
+                            const rawKeys = Object.keys(item);
+                            return {
+                                id: item.id ? String(item.id) : (item.partNumber || item.partnumber || item.part_number || Date.now().toString()),
+                                name: item.name || item.title || 'بدون اسم',
+                                type: item.type || item.brand || '',
+                                partNumber: item.partNumber || item.partnumber || item.part_number || '',
+                                price: item.price !== undefined && item.price !== null ? item.price : 0,
+                                imageUrl: item.imageUrl || item.imageurl || item.image_url || '',
+                                _rawKeys: rawKeys
+                            };
+                        });
                         renderUserGrid();
                         if (isAdminLoggedIn) renderAdminList();
                         return;
                     } else if (error) {
-                        console.warn("Supabase fetch warning, using local fallback:", error.message);
-                        showToast(`خطأ من Supabase: ${error.message}`, 'error');
+                        console.warn("Supabase fetch warning, fallback to local:", error.message);
                     }
                 } catch (err) {
                     console.error("Error connecting to Supabase:", err);
@@ -434,7 +444,7 @@
             const bgColor = type === 'success' ? 'bg-emerald-600' : 'bg-red-600';
             const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
             
-            toast.className = `${bgColor} text-white px-6 py-3 rounded-lg shadow-xl flex items-center gap-3 toast-enter pointer-events-auto text-sm font-bold max-w-md text-center`;
+            toast.className = `${bgColor} text-white px-6 py-3 rounded-lg shadow-xl flex items-center gap-3 toast-enter pointer-events-auto text-sm font-bold max-w-lg text-center`;
             toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
             
             container.appendChild(toast);
@@ -444,7 +454,7 @@
                 toast.style.transform = 'translateY(100%)';
                 toast.style.transition = 'all 0.3s ease-in';
                 setTimeout(() => toast.remove(), 300);
-            }, 4000);
+            }, 5000);
         }
 
         function renderUserGrid(dataToRender = products) {
@@ -548,7 +558,7 @@
                 isAdminLoggedIn = true;
                 closeLoginModal();
                 showAdminView();
-                showToast('تم تسجيل الدخول لوحة التحكم بنجاح');
+                showToast('تم تسجيل الدخول للوحة التحكم بنجاح');
             } else {
                 showToast('كلمة المرور غير صحيحة', 'error');
             }
@@ -573,6 +583,10 @@
 
         function logoutAdmin() {
             isAdminLoggedIn = false;
+            // مسح الهاش من الرابط عند تسجيل الخروج
+            if (window.location.hash.toUpperCase().includes('ADMIN')) {
+                history.pushState("", document.title, window.location.pathname + window.location.search);
+            }
             showUserView();
             showToast('تم تسجيل الخروج');
         }
@@ -597,7 +611,7 @@
             localStorage.setItem('canara_sp_url', cleanUrl);
             localStorage.setItem('canara_sp_key', key);
 
-            showToast('تم تنقية الرابط وحفظ إعدادات Supabase بنجاح');
+            showToast('تم حفظ واختبار إعدادات Supabase بنجاح');
             loadProducts();
             toggleSupabaseSettings();
         }
@@ -649,7 +663,7 @@ CREATE POLICY "Public Delete Access" ON products FOR DELETE USING (true);
             `.trim();
 
             navigator.clipboard.writeText(sql).then(() => {
-                showToast('تم نسخ كود SQL بنجاح! الصقه في SQL Editor بـ Supabase');
+                showToast('تم نسخ كود SQL بنجاح! الصقه في SQL Editor بـ Supabase ثم انقر Run');
             }).catch(() => {
                 showToast('فشل النسخ التلقائي، يمكنك نسخ الكود يدويًا', 'error');
             });
@@ -778,53 +792,87 @@ CREATE POLICY "Public Delete Access" ON products FOR DELETE USING (true);
         }
 
         async function saveToSupabase(payloadRaw, editingId) {
-            const candidates = [
-                // Candidate 1: Standard PostgreSQL snake_case (part_number, image_url)
-                { name: payloadRaw.name, type: payloadRaw.type, price: payloadRaw.price, part_number: payloadRaw.number, image_url: payloadRaw.imageUrl },
-                // Candidate 2: Simple lowercase (partnumber, imageurl)
-                { name: payloadRaw.name, type: payloadRaw.type, price: payloadRaw.price, partnumber: payloadRaw.number, imageurl: payloadRaw.imageUrl },
-                // Candidate 3: CamelCase (partNumber, imageUrl)
-                { name: payloadRaw.name, type: payloadRaw.type, price: payloadRaw.price, partNumber: payloadRaw.number, imageUrl: payloadRaw.imageUrl }
-            ];
+            if (!supabaseClient) throw new Error("Supabase غير متصل");
 
-            let lastError = null;
+            const possiblePartKeys = ['part_number', 'partnumber', 'partNumber', 'part_no'];
+            const possibleImageKeys = ['image_url', 'imageurl', 'imageUrl', 'image', 'photo'];
 
-            for (const candidate of candidates) {
-                try {
-                    if (editingId) {
-                        const { error } = await supabaseClient
-                            .from('products')
-                            .update(candidate)
-                            .eq('id', editingId);
-
-                        if (!error) return true;
-                        lastError = error;
-                        const msg = (error.message || '').toLowerCase();
-                        if (!msg.includes('could not find') && !msg.includes('column')) {
-                            throw error;
-                        }
-                    } else {
-                        const { error } = await supabaseClient
-                            .from('products')
-                            .insert([candidate]);
-
-                        if (!error) return true;
-                        lastError = error;
-                        const msg = (error.message || '').toLowerCase();
-                        if (!msg.includes('could not find') && !msg.includes('column')) {
-                            throw error;
-                        }
+            // Inspect keys from existing loaded items if available
+            let knownKeys = new Set();
+            if (products && products.length > 0) {
+                products.forEach(p => {
+                    if (p._rawKeys) {
+                        p._rawKeys.forEach(k => knownKeys.add(k));
                     }
-                } catch (err) {
-                    lastError = err;
-                    const msg = (err.message || '').toLowerCase();
-                    if (!msg.includes('could not find') && !msg.includes('column')) {
-                        throw err;
-                    }
-                }
+                });
             }
 
-            if (lastError) throw lastError;
+            let candidate = {
+                name: payloadRaw.name,
+                type: payloadRaw.type,
+                price: payloadRaw.price
+            };
+
+            // Select initial keys based on existing columns or fallback
+            let initialPartKey = possiblePartKeys.find(k => knownKeys.has(k)) || 'part_number';
+            candidate[initialPartKey] = payloadRaw.number;
+
+            let initialImgKey = possibleImageKeys.find(k => knownKeys.has(k)) || 'image_url';
+            candidate[initialImgKey] = payloadRaw.imageUrl;
+
+            let attemptedKeys = new Set();
+            let maxAttempts = 10;
+
+            while (maxAttempts > 0) {
+                maxAttempts--;
+                let res;
+                try {
+                    if (editingId) {
+                        res = await supabaseClient.from('products').update(candidate).eq('id', editingId);
+                    } else {
+                        res = await supabaseClient.from('products').insert([candidate]);
+                    }
+                } catch (e) {
+                    res = { error: e };
+                }
+
+                if (!res.error) {
+                    return true;
+                }
+
+                const err = res.error;
+                console.warn("Supabase attempt returned error:", err);
+
+                const msg = (err.message || err.details || '').toString();
+                const missingColMatch = msg.match(/Could not find the '([^']+)' column/i) || 
+                                        msg.match(/column "?([^"]+)"? does not exist/i);
+
+                if (missingColMatch && missingColMatch[1]) {
+                    const badCol = missingColMatch[1];
+                    attemptedKeys.add(badCol);
+                    delete candidate[badCol];
+
+                    // Replace with alternative column name if available
+                    if (possiblePartKeys.includes(badCol)) {
+                        const nextPartKey = possiblePartKeys.find(k => !attemptedKeys.has(k));
+                        if (nextPartKey) candidate[nextPartKey] = payloadRaw.number;
+                    }
+
+                    if (possibleImageKeys.includes(badCol)) {
+                        const nextImgKey = possibleImageKeys.find(k => !attemptedKeys.has(k));
+                        if (nextImgKey) candidate[nextImgKey] = payloadRaw.imageUrl;
+                    }
+
+                    continue; // Retry loop
+                }
+
+                // If error is not a column mismatch, format readable error message
+                let userError = err.message || 'خطأ أثناء الحفظ في Supabase';
+                if (err.details) userError += ` (${err.details})`;
+                throw new Error(userError);
+            }
+
+            throw new Error("تراكيب الأعمدة في جدول Supabase تتطلب تحديثاً. اضغط على 'نسخ كود SQL' لتنفيذه بـ Supabase.");
         }
 
         async function handleAddProduct(e) {
@@ -861,7 +909,7 @@ CREATE POLICY "Public Delete Access" ON products FOR DELETE USING (true);
                             showToast('تم تعديل بيانات المنتج محلياً');
                         }
                     } else {
-                        if (products.some(p => p.partNumber.toLowerCase() === number.toLowerCase())) {
+                        if (products.some(p => (p.partNumber || '').toLowerCase() === number.toLowerCase())) {
                             showToast('رقم القطعة موجود مسبقاً!', 'error');
                             submitBtn.disabled = false;
                             submitBtn.classList.remove('opacity-50');
@@ -878,7 +926,7 @@ CREATE POLICY "Public Delete Access" ON products FOR DELETE USING (true);
                 }
             } catch (err) {
                 console.error("Save error:", err);
-                showToast(`خطأ في الحفظ: ${err.message || 'تأكد من الاتصال ورابط المشروع'}`, 'error');
+                showToast(`خطأ في الحفظ: ${err.message || 'تأكد من الاتصال وجدول Supabase'}`, 'error');
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.classList.remove('opacity-50');
@@ -911,7 +959,11 @@ CREATE POLICY "Public Delete Access" ON products FOR DELETE USING (true);
             const fullUrl = decodeURIComponent(window.location.href).toUpperCase();
             
             if (hash.includes('ADMIN-PANEL') || hash.includes('ADMIN_PANEL') || hash.includes('ADMIN') || fullUrl.includes('ADMIN-PANEL') || fullUrl.includes('ADMIN_PANEL')) {
-                openLoginModal();
+                if (!isAdminLoggedIn) {
+                    openLoginModal();
+                } else {
+                    showAdminView();
+                }
             }
         }
 
