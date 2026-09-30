@@ -616,20 +616,26 @@
 
         function copySqlSchema() {
             const sql = `
--- إنشاء جدول قطع الغيار بصيغ حقول مرنة
+-- إنشاء جدول قطع الغيار بصيغ حقول مرنة وStandard PostgreSQL
 CREATE TABLE IF NOT EXISTS products (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     created_at TIMESTAMPTZ DEFAULT now(),
     name TEXT NOT NULL,
-    type TEXT NOT NULL,
-    "partNumber" TEXT UNIQUE,
+    type TEXT,
+    part_number TEXT,
     partnumber TEXT,
-    price NUMERIC NOT NULL,
-    "imageUrl" TEXT,
+    price NUMERIC,
+    image_url TEXT,
     imageurl TEXT
 );
 
--- تفعيل صلاحيات القراءة والكتابة العامة
+-- تحديث أعمدة الجدول إذا كان موجوداً مسبقاً
+ALTER TABLE products ADD COLUMN IF NOT EXISTS part_number TEXT;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS partnumber TEXT;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS image_url TEXT;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS imageurl TEXT;
+
+-- تفعيل صلاحيات القراءة والكتابة العامة (RLS)
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Public Read Access" ON products;
 DROP POLICY IF EXISTS "Public Insert Access" ON products;
@@ -750,25 +756,75 @@ CREATE POLICY "Public Delete Access" ON products FOR DELETE USING (true);
             }
         }
 
-        function handleFileUpload(event) {
-            const file = event.target.files[0];
+        function handleFileUpload(e) {
+            const file = e.target.files[0];
             if (!file) return;
-
-            if (file.size > 5 * 1024 * 1024) {
-                showToast('حجم الصورة كبير جداً، يرجى اختيار صورة أقل من 5 ميجابايت', 'error');
+            if (!file.type.startsWith('image/')) {
+                showToast('يرجى اختيار ملف صورة صالح', 'error');
                 return;
             }
-
+            if (file.size > 5 * 1024 * 1024) {
+                showToast('حجم الصورة كبير جداً (الأقصى 5 ميجابايت)', 'error');
+                return;
+            }
             const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('new-image').value = e.target.result;
+            reader.onload = function(evt) {
+                const base64Url = evt.target.result;
+                document.getElementById('new-image').value = base64Url;
                 updateImagePreview();
-                showToast('تم رفع الصورة بنجاح');
-            };
-            reader.onerror = function() {
-                showToast('حدث خطأ أثناء قراءة صورة الملف', 'error');
+                showToast('تم تحميل الصورة وتطبيقها بنجاح');
             };
             reader.readAsDataURL(file);
+        }
+
+        async function saveToSupabase(payloadRaw, editingId) {
+            const candidates = [
+                // Candidate 1: Standard PostgreSQL snake_case (part_number, image_url)
+                { name: payloadRaw.name, type: payloadRaw.type, price: payloadRaw.price, part_number: payloadRaw.number, image_url: payloadRaw.imageUrl },
+                // Candidate 2: Simple lowercase (partnumber, imageurl)
+                { name: payloadRaw.name, type: payloadRaw.type, price: payloadRaw.price, partnumber: payloadRaw.number, imageurl: payloadRaw.imageUrl },
+                // Candidate 3: CamelCase (partNumber, imageUrl)
+                { name: payloadRaw.name, type: payloadRaw.type, price: payloadRaw.price, partNumber: payloadRaw.number, imageUrl: payloadRaw.imageUrl }
+            ];
+
+            let lastError = null;
+
+            for (const candidate of candidates) {
+                try {
+                    if (editingId) {
+                        const { error } = await supabaseClient
+                            .from('products')
+                            .update(candidate)
+                            .eq('id', editingId);
+
+                        if (!error) return true;
+                        lastError = error;
+                        const msg = (error.message || '').toLowerCase();
+                        if (!msg.includes('could not find') && !msg.includes('column')) {
+                            throw error;
+                        }
+                    } else {
+                        const { error } = await supabaseClient
+                            .from('products')
+                            .insert([candidate]);
+
+                        if (!error) return true;
+                        lastError = error;
+                        const msg = (error.message || '').toLowerCase();
+                        if (!msg.includes('could not find') && !msg.includes('column')) {
+                            throw error;
+                        }
+                    }
+                } catch (err) {
+                    lastError = err;
+                    const msg = (err.message || '').toLowerCase();
+                    if (!msg.includes('could not find') && !msg.includes('column')) {
+                        throw err;
+                    }
+                }
+            }
+
+            if (lastError) throw lastError;
         }
 
         async function handleAddProduct(e) {
@@ -792,33 +848,8 @@ CREATE POLICY "Public Delete Access" ON products FOR DELETE USING (true);
 
             try {
                 if (supabaseClient) {
-                    // Send flexible payload matching multiple column naming conventions
-                    const payload = {
-                        name,
-                        type,
-                        partNumber: number,
-                        partnumber: number,
-                        price: Number(price),
-                        imageUrl: imageUrl,
-                        imageurl: imageUrl
-                    };
-
-                    if (editingProductId) {
-                        const { error } = await supabaseClient
-                            .from('products')
-                            .update(payload)
-                            .eq('id', editingProductId);
-
-                        if (error) throw error;
-                        showToast('تم التعديل في Supabase بنجاح');
-                    } else {
-                        const { error } = await supabaseClient
-                            .from('products')
-                            .insert([payload]);
-
-                        if (error) throw error;
-                        showToast('تم إضافة المنتج في Supabase بنجاح');
-                    }
+                    await saveToSupabase({ name, type, number, price: Number(price), imageUrl }, editingProductId);
+                    showToast(editingProductId ? 'تم التعديل في Supabase بنجاح' : 'تم إضافة المنتج في Supabase بنجاح');
                     await loadProducts();
                     cancelEdit();
                 } else {
