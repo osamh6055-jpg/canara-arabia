@@ -86,12 +86,8 @@
                     <p class="text-xs text-canara-yellow uppercase tracking-widest">Canara Arabia Company</p>
                 </div>
             </div>
-            <div class="flex items-center gap-2">
-                <button onclick="openLoginModal()" class="text-xs md:text-sm bg-gray-800 hover:bg-gray-700 text-canara-yellow px-3 py-1.5 rounded-lg border border-gray-700 transition-colors flex items-center gap-2">
-                    <i class="fa-solid fa-user-gear"></i>
-                    <span class="hidden sm:inline">لوحة التحكم</span>
-                </button>
-            </div>
+            <!-- تم إخفاء زر لوحة التحكم من الهيدر لعدم إظهاره للزوار -->
+            <div class="flex items-center gap-2"></div>
         </div>
     </header>
 
@@ -156,7 +152,7 @@
 
             <!-- Product Grid Section -->
             <section class="py-12 px-4 container mx-auto flex-grow">
-                <div class="flex justify-between items-center mb-8 border-b border-gray-200 pb-4">
+                <div class="flex justify-between items-center mb-6 border-b border-gray-200 pb-4">
                     <div class="flex items-center gap-3">
                         <h3 class="text-2xl font-bold text-canara-dark border-r-4 border-canara-yellow pr-3">المنتجات المتوفرة</h3>
                         <span id="supabase-status-badge" class="text-xs px-2.5 py-1 rounded-full font-medium bg-gray-200 text-gray-600 flex items-center gap-1">
@@ -457,17 +453,28 @@
                 card.innerHTML = `
                     <div class="h-48 overflow-hidden bg-gray-100 relative">
                         <img src="${product.imageUrl}" alt="${product.name}" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110" onerror="this.src='https://placehold.co/400x300/1A1A1A/FFC000?text=No+Image'">
-                        <div class="absolute top-2 right-2 bg-canara-dark text-canara-yellow text-xs font-bold px-2 py-1 rounded" dir="ltr">
+                        <!-- شارة رقم القطعة -->
+                        <div class="absolute top-2 right-2 bg-canara-dark text-canara-yellow text-xs font-bold px-2 py-1 rounded shadow" dir="ltr">
                             ${product.partNumber}
+                        </div>
+                        <!-- شارة البراند البارزة على الصورة -->
+                        <div class="absolute top-2 left-2 bg-amber-400 text-canara-dark text-xs font-extrabold px-2.5 py-1 rounded-full shadow-md flex items-center gap-1 border border-amber-300">
+                            <i class="fa-solid fa-copyright text-[10px]"></i>
+                            <span>${productBrand}</span>
                         </div>
                     </div>
                     <div class="p-4 flex-grow flex flex-col justify-between">
                         <div>
-                            <h4 class="font-bold text-gray-800 text-lg mb-1 leading-tight">${product.name}</h4>
-                            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300 mb-3">
-                                <i class="fa-solid fa-copyright text-[10px]"></i>
-                                <span>البراند: ${productBrand}</span>
+                            <h4 class="font-bold text-gray-800 text-lg mb-2 leading-tight">${product.name}</h4>
+                            
+                            <!-- عرض البراند بوضوح للعميل -->
+                            <div class="bg-amber-50 border border-amber-200 rounded-lg p-2 mb-3 flex items-center justify-between">
+                                <span class="text-xs text-gray-600 font-medium">البراند / الماركة:</span>
+                                <span class="text-xs font-extrabold text-amber-900 bg-amber-200/80 px-2.5 py-0.5 rounded-md flex items-center gap-1">
+                                    <i class="fa-solid fa-shield-halved text-[10px] text-amber-700"></i> ${productBrand}
+                                </span>
                             </div>
+
                             <div class="flex justify-between items-center mt-2 pt-2 border-t border-gray-100">
                                 <span class="text-xs text-gray-500">رقم القطعة:</span>
                                 <span class="font-mono bg-gray-100 px-2 py-0.5 rounded text-xs text-gray-700" dir="ltr">${product.partNumber}</span>
@@ -488,17 +495,13 @@
         }
 
         function handleSearch() {
-            const query = searchInput.value.toLowerCase().trim();
-            if (!query) {
-                renderUserGrid(products);
-                return;
-            }
+            const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
             const filtered = products.filter(p => {
                 const matchName = (p.name || '').toLowerCase().includes(query);
                 const matchNumber = (p.partNumber || '').toLowerCase().includes(query);
                 const matchType = (p.type || '').toLowerCase().includes(query);
-                return matchName || matchNumber || matchType;
+                return !query || (matchName || matchNumber || matchType);
             });
 
             renderUserGrid(filtered);
@@ -783,8 +786,11 @@ CREATE POLICY "Public Delete Access" ON products FOR DELETE USING (true);
         }
 
         function checkAdminUrl() {
-            const currentUrl = decodeURIComponent(window.location.href).toUpperCase();
-            if (currentUrl.includes('ADMIN PANEL') || currentUrl.includes('ADMIN_PANEL') || currentUrl.includes('ADMIN')) {
+            const hash = decodeURIComponent(window.location.hash).toUpperCase();
+            const fullUrl = decodeURIComponent(window.location.href).toUpperCase();
+            
+            // التحقق من وجود #ADMIN-PANEL أو ما يشابهه للوصول للوحة التحكم
+            if (hash.includes('ADMIN-PANEL') || hash.includes('ADMIN_PANEL') || hash.includes('ADMIN') || fullUrl.includes('ADMIN-PANEL') || fullUrl.includes('ADMIN_PANEL')) {
                 openLoginModal();
             }
         }
