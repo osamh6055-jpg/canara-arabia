@@ -87,7 +87,6 @@
                     <p class="text-xs text-canara-yellow uppercase tracking-widest">Canara Arabia Company</p>
                 </div>
             </div>
-            <!-- تم إخفاء زر لوحة التحكم عن الزوار العاديين -->
         </div>
     </header>
 
@@ -379,16 +378,18 @@
             { id: '6', name: 'مسمار وجلبة بوكت', type: 'https://placehold.co/120x40/111111/FFC000?text=Komatsu', partNumber: 'PB-009', price: 220, imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Pin+%26+Bushing' }
         ];
 
-        // 🟢 قم بوضع الرابط والمفتاح الخاصين بك بين علامات التنصيص هنا ليعمل الموقع للجميع
+        // 🟢 ضع رابط ومفتاح Supabase هنا ليعمل الاتصال تلقائياً لجميع الأجهزة والزوار
         const PUBLIC_SUPABASE_URL = 'ضع_رابط_مشروعك_هنا';
         const PUBLIC_SUPABASE_KEY = 'ضع_المفتاح_الطويل_هنا';
 
-        // سيقوم النظام الآن باستخدام الرابط العام إذا لم يقم الأدمن بتغييره من لوحة التحكم
         let SUPABASE_URL = localStorage.getItem('canara_sp_url') || (PUBLIC_SUPABASE_URL !== 'ضع_رابط_مشروعك_هنا' ? PUBLIC_SUPABASE_URL : '');
         let SUPABASE_KEY = localStorage.getItem('canara_sp_key') || (PUBLIC_SUPABASE_KEY !== 'ضع_المفتاح_الطويل_هنا' ? PUBLIC_SUPABASE_KEY : '');
         let supabaseClient = null;
 
         let products = [];
+        let isAdminLoggedIn = false;
+        let editingProductId = null;
+
         function isUUID(str) {
             if (!str) return false;
             const regex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/i;
@@ -547,27 +548,21 @@
                 card.innerHTML = `
                     <div class="h-48 overflow-hidden bg-gray-100 relative">
                         <img src="${product.imageUrl}" alt="${product.name}" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110" onerror="this.src='https://placehold.co/400x300/1A1A1A/FFC000?text=No+Image'">
-                        <div class="absolute top-2 right-2 bg-canara-dark text-canara-yellow text-xs font-bold px-2 py-1 rounded shadow" dir="ltr">
-                            ${product.partNumber}
-                        </div>
-                        <div class="absolute top-2 left-2 bg-white/95 p-1 px-2 rounded-lg shadow-md border border-gray-200 flex items-center justify-center">
-                            <img src="${productBrand}" alt="شعار البراند" class="h-5 max-w-[85px] object-contain" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'text-xs font-bold text-gray-700\'>${productBrand || 'غير محدد'}</span>'">
-                        </div>
                     </div>
                     <div class="p-4 flex-grow flex flex-col justify-between">
                         <div>
                             <h4 class="font-bold text-gray-800 text-lg mb-2 leading-tight">${product.name}</h4>
                             
-                            <div class="bg-amber-50/70 border border-amber-200/80 rounded-lg p-2 mb-3 flex items-center justify-between">
-                                <span class="text-xs text-gray-600 font-medium">البراند / الماركة:</span>
-                                <div class="h-7 px-2 py-0.5 bg-white border border-amber-200 rounded-md flex items-center justify-center shadow-sm">
-                                    <img src="${productBrand}" alt="الماركة" class="h-5 max-w-[100px] object-contain" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'text-xs font-bold text-amber-900\'>${productBrand || 'غير محدد'}</span>'">
+                            <div class="bg-amber-50/80 border border-amber-200/80 rounded-lg p-2.5 mb-3 flex items-center justify-between">
+                                <span class="text-xs text-gray-600 font-bold">البراند / الماركة:</span>
+                                <div class="h-10 px-3 py-1 bg-white border border-amber-200 rounded-lg flex items-center justify-center shadow-sm min-w-[120px]">
+                                    <img src="${productBrand}" alt="الماركة" class="h-7 max-w-[130px] object-contain" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'text-sm font-bold text-amber-900\'>${productBrand || 'غير محدد'}</span>'">
                                 </div>
                             </div>
 
                             <div class="flex justify-between items-center mt-2 pt-2 border-t border-gray-100">
                                 <span class="text-xs text-gray-500">رقم القطعة:</span>
-                                <span class="font-mono bg-gray-100 px-2 py-0.5 rounded text-xs text-gray-700" dir="ltr">${product.partNumber}</span>
+                                <span class="font-mono bg-gray-100 px-2.5 py-1 rounded text-xs text-gray-800 font-bold" dir="ltr">${product.partNumber}</span>
                             </div>
                             <div class="flex justify-between items-center mt-2 pt-2 border-t border-gray-100 mb-4">
                                 <span class="text-xs text-gray-500">السعر:</span>
@@ -586,6 +581,13 @@
 
         function handleSearch() {
             const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+            // إمكانية فتح لوحة التحكم عند كتابة admin أو admin panel في مربع البحث
+            if (query === 'admin' || query === 'admin panel' || query === 'admin-panel') {
+                openLoginModal();
+                searchInput.value = '';
+                return;
+            }
 
             const filtered = products.filter(p => {
                 const matchName = (p.name || '').toLowerCase().includes(query);
