@@ -379,15 +379,16 @@
             { id: '6', name: 'مسمار وجلبة بوكت', type: 'https://placehold.co/120x40/111111/FFC000?text=Komatsu', partNumber: 'PB-009', price: 220, imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Pin+%26+Bushing' }
         ];
 
-        let SUPABASE_URL = localStorage.getItem('canara_sp_url') || '';
-        let SUPABASE_KEY = localStorage.getItem('canara_sp_key') || '';
+        // 🟢 قم بوضع الرابط والمفتاح الخاصين بك بين علامات التنصيص هنا ليعمل الموقع للجميع
+        const PUBLIC_SUPABASE_URL = 'ضع_رابط_مشروعك_هنا';
+        const PUBLIC_SUPABASE_KEY = 'ضع_المفتاح_الطويل_هنا';
+
+        // سيقوم النظام الآن باستخدام الرابط العام إذا لم يقم الأدمن بتغييره من لوحة التحكم
+        let SUPABASE_URL = localStorage.getItem('canara_sp_url') || (PUBLIC_SUPABASE_URL !== 'ضع_رابط_مشروعك_هنا' ? PUBLIC_SUPABASE_URL : '');
+        let SUPABASE_KEY = localStorage.getItem('canara_sp_key') || (PUBLIC_SUPABASE_KEY !== 'ضع_المفتاح_الطويل_هنا' ? PUBLIC_SUPABASE_KEY : '');
         let supabaseClient = null;
 
         let products = [];
-        let isAdminLoggedIn = false;
-        let editingProductId = null;
-
-        // دالة جديدة للتحقق مما إذا كان الـ ID بصيغة UUID السحابية
         function isUUID(str) {
             if (!str) return false;
             const regex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/i;
