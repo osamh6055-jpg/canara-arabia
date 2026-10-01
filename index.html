@@ -456,7 +456,7 @@
                     }
                     if (dbSourceBadge) dbSourceBadge.textContent = 'سحابي (Supabase)';
                     const badge = document.getElementById('supabase-status-badge');
-                    if (badge) badge.className = 'text-xs px-2.5 py-1 rounded-full font-medium bg-emerald-100 text-emerald-700 flex items-center gap-1';
+                    if (badge) badge.className = 'hidden';
                     return true;
                 } catch (e) {
                     console.error("Supabase init error:", e);
