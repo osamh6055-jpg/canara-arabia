@@ -387,6 +387,13 @@
         let isAdminLoggedIn = false;
         let editingProductId = null;
 
+        // دالة جديدة للتحقق مما إذا كان الـ ID بصيغة UUID السحابية
+        function isUUID(str) {
+            if (!str) return false;
+            const regex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/i;
+            return regex.test(str);
+        }
+
         // DOM Element references
         const userView = document.getElementById('user-view');
         const adminView = document.getElementById('admin-view');
@@ -427,11 +434,14 @@
             }
         }
 
-        function initSupabase() {
+        function initSupabase(forceNew = false) {
             const cleanUrl = sanitizeUrl(SUPABASE_URL);
             if (window.supabase && cleanUrl && SUPABASE_KEY) {
                 try {
-                    supabaseClient = window.supabase.createClient(cleanUrl, SUPABASE_KEY.trim());
+                    // إنشاء العميل مرة واحدة فقط لمنع تحذيرات (Multiple GoTrueClient)
+                    if (!supabaseClient || forceNew) {
+                        supabaseClient = window.supabase.createClient(cleanUrl, SUPABASE_KEY.trim());
+                    }
                     dbSourceBadge.textContent = 'سحابي (Supabase)';
                     document.getElementById('supabase-status-badge').className = 'text-xs px-2.5 py-1 rounded-full font-medium bg-emerald-100 text-emerald-700 flex items-center gap-1';
                     return true;
@@ -755,7 +765,8 @@
             localStorage.setItem('canara_sp_url', cleanUrl);
             localStorage.setItem('canara_sp_key', key);
 
-            initSupabase();
+            // نجبر النظام على إنشاء اتصال جديد بعد تغيير الإعدادات
+            initSupabase(true);
 
             if (supabaseClient) {
                 try {
@@ -995,8 +1006,11 @@ CREATE POLICY "Public Delete Access" ON public.products FOR DELETE USING (true);
             };
 
             let res;
-            if (editingId) {
+            // التحقق لتجنب خطأ 400: إذا كان الـ ID ليس UUID نستخدم رقم القطعة للتحديث
+            if (editingId && isUUID(editingId)) {
                 res = await supabaseClient.from('products').update(candidate).eq('id', editingId);
+            } else if (editingId) {
+                res = await supabaseClient.from('products').update(candidate).eq('part_number', payloadRaw.number);
             } else {
                 res = await supabaseClient.from('products').insert([candidate]);
             }
@@ -1011,8 +1025,10 @@ CREATE POLICY "Public Delete Access" ON public.products FOR DELETE USING (true);
                 };
                 
                 let fallbackRes;
-                if (editingId) {
+                if (editingId && isUUID(editingId)) {
                     fallbackRes = await supabaseClient.from('products').update(simpleCandidate).eq('id', editingId);
+                } else if (editingId) {
+                    fallbackRes = await supabaseClient.from('products').update(simpleCandidate).eq('part_number', payloadRaw.number);
                 } else {
                     fallbackRes = await supabaseClient.from('products').insert([simpleCandidate]);
                 }
@@ -1100,7 +1116,22 @@ CREATE POLICY "Public Delete Access" ON public.products FOR DELETE USING (true);
         async function deleteProduct(id) {
             if (supabaseClient) {
                 try {
-                    const { error } = await supabaseClient.from('products').delete().eq('id', id);
+                    let error;
+                    // التحقق لتجنب خطأ 400: نحذف بالـ ID فقط إذا كان بصيغة UUID
+                    if (isUUID(id)) {
+                        const res = await supabaseClient.from('products').delete().eq('id', id);
+                        error = res.error;
+                    } else {
+                        // إذا لم يكن UUID، نبحث عن رقم القطعة ونحذف من خلاله
+                        const productToDelete = products.find(p => String(p.id) === String(id));
+                        if (productToDelete && productToDelete.partNumber) {
+                            const res = await supabaseClient.from('products').delete().eq('part_number', productToDelete.partNumber);
+                            error = res.error;
+                        } else {
+                            throw new Error("لا يمكن حذف المنتج السحابي: معرف القطعة غير متوافق");
+                        }
+                    }
+
                     if (error) throw error;
                     showToast('تم حذف القطعة من Supabase');
                     await loadProducts();
@@ -1108,6 +1139,7 @@ CREATE POLICY "Public Delete Access" ON public.products FOR DELETE USING (true);
                 } catch (err) {
                     console.error("Delete error:", err);
                     showToast(`خطأ بالحذف: ${err.message}`, 'error');
+                    return; // إيقاف العملية حتى لا ينفذ الحذف المحلي الخاطئ
                 }
             }
 
