@@ -676,10 +676,38 @@
                 syncBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الرفع...';
             }
 
+            // فحص المنتجات الموجودة مسبقاً لتجنب التكرار
+            let existingPartNumbers = new Set();
+            try {
+                const { data, error } = await supabaseClient.from('products').select('part_number, partnumber');
+                if (data) {
+                    data.forEach(item => {
+                        if (item.part_number) existingPartNumbers.add(item.part_number.toLowerCase());
+                        if (item.partnumber) existingPartNumbers.add(item.partnumber.toLowerCase());
+                    });
+                }
+            } catch (e) {
+                console.warn("Error fetching existing products:", e);
+            }
+
+            let newItemsToSync = itemsToSync.filter(p => {
+                const pNum = (p.partNumber || p.part_number || '').toLowerCase();
+                return !existingPartNumbers.has(pNum);
+            });
+
+            if (newItemsToSync.length === 0) {
+                showToast('جميع المنتجات موجودة مسبقاً في السحابة (لا يوجد جديد لرفعه)', 'error');
+                if (syncBtn) {
+                    syncBtn.disabled = false;
+                    syncBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> رفع المنتجات الحالية للسحاب';
+                }
+                return;
+            }
+
             let successCount = 0;
             let lastError = null;
 
-            for (const p of itemsToSync) {
+            for (const p of newItemsToSync) {
                 try {
                     await saveToSupabase({
                         name: p.name || 'بدون اسم',
@@ -1020,6 +1048,18 @@ CREATE POLICY "Public Delete Access" ON public.products FOR DELETE USING (true);
             const type = formatImageUrl(rawType);
             const imageUrl = formatImageUrl(rawImageUrl);
 
+            // التحقق من عدم تكرار رقم القطعة (يمنع التدبيل)
+            const isDuplicate = products.some(p => {
+                const matchNumber = (p.partNumber || '').toLowerCase() === number.toLowerCase();
+                const isDifferentProduct = String(p.id) !== String(editingProductId);
+                return matchNumber && isDifferentProduct;
+            });
+
+            if (isDuplicate) {
+                showToast('رقم القطعة موجود مسبقاً!', 'error');
+                return;
+            }
+
             const submitBtn = document.getElementById('submit-btn');
             submitBtn.disabled = true;
             submitBtn.classList.add('opacity-50');
@@ -1039,12 +1079,6 @@ CREATE POLICY "Public Delete Access" ON public.products FOR DELETE USING (true);
                             showToast('تم تعديل بيانات المنتج محلياً');
                         }
                     } else {
-                        if (products.some(p => (p.partNumber || '').toLowerCase() === number.toLowerCase())) {
-                            showToast('رقم القطعة موجود مسبقاً!', 'error');
-                            submitBtn.disabled = false;
-                            submitBtn.classList.remove('opacity-50');
-                            return;
-                        }
                         const newProduct = { id: Date.now().toString(), name, type, partNumber: number, price: Number(price), imageUrl };
                         products.push(newProduct);
                         saveLocalProducts();
