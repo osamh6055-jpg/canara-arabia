@@ -87,8 +87,6 @@
                     <p class="text-xs text-canara-yellow uppercase tracking-widest">Canara Arabia Company</p>
                 </div>
             </div>
-            <!-- -->
-            <!-- تم إخفاء زر لوحة التحكم ليكون الوصول إليها محصوراً بإضافة #ADMIN-PANEL للرابط -->
         </div>
     </header>
 
@@ -214,6 +212,16 @@
                     <p class="text-sm text-gray-600 mb-4 leading-relaxed">
                         قم بإدخال بيانات مشروعك على <strong>Supabase</strong> لحفظ قطع الغيار سحابياً ومشاركتها مع جميع المستخدمين والأجهزة في الوقت الفعلي:
                     </p>
+
+                    <!-- تنبيه النشر على GitHub Pages -->
+                    <div class="mb-4 p-3 bg-amber-50 border border-amber-300 rounded-lg text-xs text-amber-900 leading-relaxed flex items-start gap-2">
+                        <i class="fa-solid fa-triangle-exclamation text-amber-600 text-base mt-0.5"></i>
+                        <div>
+                            <strong>ملاحظة هامة للعمل على رابط GitHub Pages للجميع:</strong><br>
+                            لتظهر المنتجات لجميع الزوار على الرابط العام تلقائياً، قم بفتح ملف <code class="bg-amber-100 px-1 py-0.5 rounded font-mono">index.html</code> في كود الموقع وضعي رابط ومفتاح Supabase في المتغيرات:
+                            <code class="bg-amber-100 px-1 py-0.5 rounded font-mono">PUBLIC_SUPABASE_URL</code> و <code class="bg-amber-100 px-1 py-0.5 rounded font-mono">PUBLIC_SUPABASE_KEY</code> ثم قم برفع التعديل إلى GitHub.
+                        </div>
+                    </div>
 
                     <!-- Quick Interactive Visual Guide Panel -->
                     <div id="setup-guide-panel" class="hidden mb-6 bg-emerald-50/80 border border-emerald-200 rounded-xl p-4 text-sm text-gray-700">
@@ -491,7 +499,14 @@
 
             const localData = localStorage.getItem('canara_products');
             if (localData) {
-                try { products = JSON.parse(localData); } catch (e) { products = defaultProducts; }
+                try { 
+                    products = JSON.parse(localData); 
+                    if (!Array.isArray(products) || products.length === 0) {
+                        products = defaultProducts;
+                    }
+                } catch (e) { 
+                    products = defaultProducts; 
+                }
             } else {
                 products = defaultProducts;
                 localStorage.setItem('canara_products', JSON.stringify(products));
@@ -629,10 +644,6 @@
             adminView.classList.add('hidden');
             renderUserGrid();
             if (searchInput) searchInput.value = '';
-            // تنظيف الهاش من الرابط عند العودة للعرض العام
-            if (window.location.hash) {
-                history.pushState("", document.title, window.location.pathname + window.location.search);
-            }
         }
 
         function showAdminView() {
