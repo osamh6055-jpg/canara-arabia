@@ -87,6 +87,8 @@
                     <p class="text-xs text-canara-yellow uppercase tracking-widest">Canara Arabia Company</p>
                 </div>
             </div>
+            <!-- -->
+            <!-- تم إخفاء زر لوحة التحكم ليكون الوصول إليها محصوراً بإضافة #ADMIN-PANEL للرابط -->
         </div>
     </header>
 
@@ -369,6 +371,12 @@
 
     <!-- JavaScript Logic -->
     <script>
+        // تعريف متغيرات الحالة عالمياً لتفادي أخطاء ReferenceError
+        var isAdminLoggedIn = false;
+        var editingProductId = null;
+        var products = [];
+        var supabaseClient = null;
+
         const defaultProducts = [
             { id: '1', name: 'مضخة هيدروليكية رئيسية', type: 'https://placehold.co/120x40/111111/FFC000?text=ITR', partNumber: 'CA-98765', price: 3500, imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Hydraulic+Pump' },
             { id: '2', name: 'فلتر زيت محرك', type: 'https://placehold.co/120x40/111111/FFC000?text=CAT', partNumber: '1R-1808', price: 180, imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Oil+Filter' },
@@ -382,13 +390,8 @@
         const PUBLIC_SUPABASE_URL = 'ضع_رابط_مشروعك_هنا';
         const PUBLIC_SUPABASE_KEY = 'ضع_المفتاح_الطويل_هنا';
 
-        let SUPABASE_URL = localStorage.getItem('canara_sp_url') || (PUBLIC_SUPABASE_URL !== 'ضع_رابط_مشروعك_هنا' ? PUBLIC_SUPABASE_URL : '');
-        let SUPABASE_KEY = localStorage.getItem('canara_sp_key') || (PUBLIC_SUPABASE_KEY !== 'ضع_المفتاح_الطويل_هنا' ? PUBLIC_SUPABASE_KEY : '');
-        let supabaseClient = null;
-
-        let products = [];
-        let isAdminLoggedIn = false;
-        let editingProductId = null;
+        var SUPABASE_URL = localStorage.getItem('canara_sp_url') || (PUBLIC_SUPABASE_URL !== 'ضع_رابط_مشروعك_هنا' ? PUBLIC_SUPABASE_URL : '');
+        var SUPABASE_KEY = localStorage.getItem('canara_sp_key') || (PUBLIC_SUPABASE_KEY !== 'ضع_المفتاح_الطويل_هنا' ? PUBLIC_SUPABASE_KEY : '');
 
         function isUUID(str) {
             if (!str) return false;
@@ -440,19 +443,20 @@
             const cleanUrl = sanitizeUrl(SUPABASE_URL);
             if (window.supabase && cleanUrl && SUPABASE_KEY) {
                 try {
-                    // إنشاء العميل مرة واحدة فقط لمنع تحذيرات (Multiple GoTrueClient)
                     if (!supabaseClient || forceNew) {
                         supabaseClient = window.supabase.createClient(cleanUrl, SUPABASE_KEY.trim());
                     }
-                    dbSourceBadge.textContent = 'سحابي (Supabase)';
-                    document.getElementById('supabase-status-badge').className = 'text-xs px-2.5 py-1 rounded-full font-medium bg-emerald-100 text-emerald-700 flex items-center gap-1';
+                    if (dbSourceBadge) dbSourceBadge.textContent = 'سحابي (Supabase)';
+                    const badge = document.getElementById('supabase-status-badge');
+                    if (badge) badge.className = 'text-xs px-2.5 py-1 rounded-full font-medium bg-emerald-100 text-emerald-700 flex items-center gap-1';
                     return true;
                 } catch (e) {
                     console.error("Supabase init error:", e);
                 }
             }
-            dbSourceBadge.textContent = 'تخزين محلي';
-            document.getElementById('supabase-status-badge').className = 'text-xs px-2.5 py-1 rounded-full font-medium bg-amber-100 text-amber-800 flex items-center gap-1';
+            if (dbSourceBadge) dbSourceBadge.textContent = 'تخزين محلي';
+            const badge = document.getElementById('supabase-status-badge');
+            if (badge) badge.className = 'text-xs px-2.5 py-1 rounded-full font-medium bg-amber-100 text-amber-800 flex items-center gap-1';
             supabaseClient = null;
             return false;
         }
@@ -475,7 +479,7 @@
                             };
                         });
                         renderUserGrid();
-                        if (isAdminLoggedIn) renderAdminList();
+                        if (typeof isAdminLoggedIn !== 'undefined' && isAdminLoggedIn) renderAdminList();
                         return;
                     } else if (error) {
                         console.warn("Supabase fetch warning, fallback to local:", error.message);
@@ -493,7 +497,7 @@
                 localStorage.setItem('canara_products', JSON.stringify(products));
             }
             renderUserGrid();
-            if (isAdminLoggedIn) renderAdminList();
+            if (typeof isAdminLoggedIn !== 'undefined' && isAdminLoggedIn) renderAdminList();
         }
 
         function saveLocalProducts() {
@@ -502,6 +506,7 @@
 
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
+            if (!container) return;
             const toast = document.createElement('div');
             const bgColor = type === 'success' ? 'bg-emerald-600' : 'bg-red-600';
             const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
@@ -582,13 +587,6 @@
         function handleSearch() {
             const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
-            // إمكانية فتح لوحة التحكم عند كتابة admin أو admin panel في مربع البحث
-            if (query === 'admin' || query === 'admin panel' || query === 'admin-panel') {
-                openLoginModal();
-                searchInput.value = '';
-                return;
-            }
-
             const filtered = products.filter(p => {
                 const matchName = (p.name || '').toLowerCase().includes(query);
                 const matchNumber = (p.partNumber || '').toLowerCase().includes(query);
@@ -631,6 +629,10 @@
             adminView.classList.add('hidden');
             renderUserGrid();
             if (searchInput) searchInput.value = '';
+            // تنظيف الهاش من الرابط عند العودة للعرض العام
+            if (window.location.hash) {
+                history.pushState("", document.title, window.location.pathname + window.location.search);
+            }
         }
 
         function showAdminView() {
@@ -645,7 +647,7 @@
 
         function logoutAdmin() {
             isAdminLoggedIn = false;
-            if (window.location.hash.toUpperCase().includes('ADMIN')) {
+            if (window.location.hash) {
                 history.pushState("", document.title, window.location.pathname + window.location.search);
             }
             showUserView();
