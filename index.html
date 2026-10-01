@@ -395,8 +395,8 @@
         ];
 
         // 🟢 ضع رابط ومفتاح Supabase هنا ليعمل الاتصال تلقائياً لجميع الأجهزة والزوار
-        const PUBLIC_SUPABASE_URL = 'ضع_رابط_مشروعك_هنا';
-        const PUBLIC_SUPABASE_KEY = 'ضع_المفتاح_الطويل_هنا';
+        const PUBLIC_SUPABASE_URL = 'https://knvfuhmvqzmjdwllawnm.supabase.co/rest/v1/';
+        const PUBLIC_SUPABASE_KEY = 'sb_publishable_zRTn_z2DdtnrI_mm4hjXeg_FX-hk0Rf';
 
         var SUPABASE_URL = localStorage.getItem('canara_sp_url') || (PUBLIC_SUPABASE_URL !== 'ضع_رابط_مشروعك_هنا' ? PUBLIC_SUPABASE_URL : '');
         var SUPABASE_KEY = localStorage.getItem('canara_sp_key') || (PUBLIC_SUPABASE_KEY !== 'ضع_المفتاح_الطويل_هنا' ? PUBLIC_SUPABASE_KEY : '');
@@ -1009,61 +1009,39 @@ CREATE POLICY "Public Delete Access" ON public.products FOR DELETE USING (true);
         }
 
         async function saveToSupabase(payloadRaw, editingId) {
-            if (!supabaseClient) throw new Error("Supabase غير متصل");
+    if (!supabaseClient) throw new Error("Supabase غير متصل");
 
-            const candidate = {
-                name: payloadRaw.name,
-                type: payloadRaw.type,
-                part_number: payloadRaw.number,
-                partnumber: payloadRaw.number,
-                price: Number(payloadRaw.price) || 0,
-                image_url: payloadRaw.imageUrl,
-                imageurl: payloadRaw.imageUrl
-            };
+    const candidate = {
+        name: payloadRaw.name,
+        type: payloadRaw.type,
+        part_number: payloadRaw.number,
+        price: Number(payloadRaw.price) || 0,
+        image_url: payloadRaw.imageUrl
+    };
 
-            let res;
-            // التحقق لتجنب خطأ 400: إذا كان الـ ID ليس UUID نستخدم رقم القطعة للتحديث
-            if (editingId && isUUID(editingId)) {
-                res = await supabaseClient.from('products').update(candidate).eq('id', editingId);
-            } else if (editingId) {
-                res = await supabaseClient.from('products').update(candidate).eq('part_number', payloadRaw.number);
-            } else {
-                res = await supabaseClient.from('products').insert([candidate]);
-            }
+    let res;
+    if (editingId && isUUID(editingId)) {
+        res = await supabaseClient.from('products').update(candidate).eq('id', editingId);
+    } else if (editingId) {
+        res = await supabaseClient.from('products').update(candidate).eq('part_number', payloadRaw.number);
+    } else {
+        res = await supabaseClient.from('products').insert([candidate]);
+    }
 
-            if (res.error) {
-                const simpleCandidate = {
-                    name: payloadRaw.name,
-                    type: payloadRaw.type,
-                    part_number: payloadRaw.number,
-                    price: Number(payloadRaw.price) || 0,
-                    image_url: payloadRaw.imageUrl
-                };
-                
-                let fallbackRes;
-                if (editingId && isUUID(editingId)) {
-                    fallbackRes = await supabaseClient.from('products').update(simpleCandidate).eq('id', editingId);
-                } else if (editingId) {
-                    fallbackRes = await supabaseClient.from('products').update(simpleCandidate).eq('part_number', payloadRaw.number);
-                } else {
-                    fallbackRes = await supabaseClient.from('products').insert([simpleCandidate]);
-                }
-
-                if (fallbackRes.error) {
-                    const err = fallbackRes.error;
-                    if (err.code === '42P01' || err.message?.includes('does not exist')) {
-                        throw new Error('جدول products غير موجود بالـ Supabase. يرجى الضغط على زر "نسخ كود SQL" وتشغيله في Supabase.');
-                    }
-                    if (err.code === '42501' || err.message?.includes('row-level security')) {
-                        throw new Error('تم منع الحفظ بسبب صلاحيات RLS. يرجى نسخ كود SQL وتشغيله بـ Supabase لتفعيل الصلاحيات.');
-                    }
-                    throw new Error(err.message || 'خطأ أثناء الحفظ في Supabase');
-                }
-            }
-
-            return true;
+    if (res.error) {
+        console.error("خطأ Supabase:", res.error);
+        const err = res.error;
+        if (err.code === '42P01' || err.message?.includes('does not exist')) {
+            throw new Error('جدول products غير موجود بالـ Supabase.');
         }
+        if (err.code === '42501' || err.message?.includes('row-level security')) {
+            throw new Error('مشكلة في صلاحيات RLS، يرجى تشغيل كود SQL في Supabase.');
+        }
+        throw new Error(err.message || 'خطأ أثناء الحفظ في Supabase');
+    }
 
+    return true;
+}
         async function handleAddProduct(e) {
             e.preventDefault();
             const name = document.getElementById('new-name').value.trim();
