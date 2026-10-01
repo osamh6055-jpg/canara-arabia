@@ -566,12 +566,12 @@
                 const waUrl = `https://wa.me/${waNumber}?text=${waMessage}`;
 
                 card.innerHTML = `
-                    <div class="h-48 w-full overflow-hidden bg-white relative flex items-center justify-center">
+                   <div class="w-full bg-white relative flex items-center justify-center p-4">
     <img src="${product.imageUrl}" alt="${product.name}" class="w-full h-auto object-contain transition-transform duration-500 hover:scale-105" onerror="this.src='https://placeholder.co/400x300/1A1A1A/FFC000?text=No+Image'">
 </div>
                     <div class="p-4 flex-grow flex flex-col justify-between">
                         <div>
-                           <h4 class="font-bold text-gray-800 text-lg mt-3 mb-2 leading-tight">${product.name}</h4>
+                           <h4 class="font-bold text-gray-800 text-lg mt-6 mb-2 leading-tight">${product.name}</h4>
                             
                             <div class="bg-amber-50/80 border border-amber-200/80 rounded-lg p-2.5 mb-3 flex items-center justify-between">
                                 <span class="text-xs text-gray-600 font-bold">البراند / الماركة:</span>
