@@ -566,9 +566,9 @@
                 const waUrl = `https://wa.me/${waNumber}?text=${waMessage}`;
 
                 card.innerHTML = `
-                    <div class="h-48 overflow-hidden bg-gray-100 relative">
-                        <img src="${product.imageUrl}" alt="${product.name}" class="w-full h-full object-contain p-2 bg-gray-50 transition-transform duration-500 hover:scale-105" onerror="...">
-                    </div>
+                    <div class="h-44 w-full overflow-hidden bg-gray-50 relative flex items-center justify-center">
+               <img src="${product.imageUrl}" alt="${product.name}" class="w-full h-full object-contain transition-transform duration-500 hover:scale-105" onerror="this.src='https://placeholder.co/400x300/1A1A1A/FFC000?text=No+Image'">
+            </div>
                     <div class="p-4 flex-grow flex flex-col justify-between">
                         <div>
                             <h4 class="font-bold text-gray-800 text-lg mb-2 leading-tight">${product.name}</h4>
