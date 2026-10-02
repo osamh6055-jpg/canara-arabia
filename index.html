@@ -303,6 +303,10 @@
                                     <label class="block text-sm font-medium text-gray-700 mb-1">السعر (ر.س - ريال سعودي)</label>
                                     <input type="number" id="new-price" class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-canara-yellow font-sans text-left" dir="ltr" required placeholder="مثال: 1200" min="0" step="any">
                                 </div>
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">وصف المنتج (اختياري)</label>
+                                    <textarea id="new-description" rows="2" class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-canara-yellow text-sm" placeholder="اكتب وصفاً أو ملاحظات إضافية للقطعة (اختياري)..."></textarea>
+                                </div>
                                 <div class="mb-6">
                                     <label class="block text-sm font-medium text-gray-700 mb-1">صورة المنتج (رابط مباشر أو رفع ملف)</label>
                                     <div class="space-y-3">
@@ -386,12 +390,12 @@
         var supabaseClient = null;
 
         const defaultProducts = [
-            { id: '1', name: 'مضخة هيدروليكية رئيسية', type: 'https://placehold.co/120x40/111111/FFC000?text=ITR', partNumber: 'CA-98765', price: 3500, imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Hydraulic+Pump' },
-            { id: '2', name: 'فلتر زيت محرك', type: 'https://placehold.co/120x40/111111/FFC000?text=CAT', partNumber: '1R-1808', price: 180, imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Oil+Filter' },
-            { id: '3', name: 'جنزير حفارة كامل', type: 'https://placehold.co/120x40/111111/FFC000?text=ITR', partNumber: 'TRK-452', price: 4200, imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Track+Chain' },
-            { id: '4', name: 'طقم ربلات (Seal Kit)', type: 'https://placehold.co/120x40/111111/FFC000?text=FP', partNumber: 'SK-2099', price: 450, imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Seal+Kit' },
-            { id: '5', name: 'ترس دوران (Swing Gear)', type: 'https://placehold.co/120x40/111111/FFC000?text=CTP', partNumber: 'SG-112', price: 2800, imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Swing+Gear' },
-            { id: '6', name: 'مسمار وجلبة بوكت', type: 'https://placehold.co/120x40/111111/FFC000?text=Komatsu', partNumber: 'PB-009', price: 220, imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Pin+%26+Bushing' }
+            { id: '1', name: 'مضخة هيدروليكية رئيسية', type: 'https://placehold.co/120x40/111111/FFC000?text=ITR', partNumber: 'CA-98765', price: 3500, description: 'مضخة ذات جودة عالية متوافقة مع كافة المعدات الثقيلة.', imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Hydraulic+Pump' },
+            { id: '2', name: 'فلتر زيت محرك', type: 'https://placehold.co/120x40/111111/FFC000?text=CAT', partNumber: '1R-1808', price: 180, description: '', imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Oil+Filter' },
+            { id: '3', name: 'جنزير حفارة كامل', type: 'https://placehold.co/120x40/111111/FFC000?text=ITR', partNumber: 'TRK-452', price: 4200, description: '', imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Track+Chain' },
+            { id: '4', name: 'طقم ربلات (Seal Kit)', type: 'https://placehold.co/120x40/111111/FFC000?text=FP', partNumber: 'SK-2099', price: 450, description: '', imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Seal+Kit' },
+            { id: '5', name: 'ترس دوران (Swing Gear)', type: 'https://placehold.co/120x40/111111/FFC000?text=CTP', partNumber: 'SG-112', price: 2800, description: '', imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Swing+Gear' },
+            { id: '6', name: 'مسمار وجلبة بوكت', type: 'https://placehold.co/120x40/111111/FFC000?text=Komatsu', partNumber: 'PB-009', price: 220, description: '', imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Pin+%26+Bushing' }
         ];
 
         // 🟢 ضع رابط ومفتاح Supabase هنا ليعمل الاتصال تلقائياً لجميع الأجهزة والزوار
@@ -482,6 +486,7 @@
                                 type: item.type || item.brand || '',
                                 partNumber: item.partNumber || item.partnumber || item.part_number || '',
                                 price: item.price !== undefined && item.price !== null ? item.price : 0,
+                                description: item.description || item.desc || '',
                                 imageUrl: item.imageUrl || item.imageurl || item.image_url || '',
                                 _rawKeys: rawKeys
                             };
@@ -562,7 +567,7 @@
                 const productBrand = product.type || '';
                 const formattedPrice = product.price ? Number(product.price).toLocaleString('en-US') : 'حسب الطلب';
                 const waNumber = "966567618315";
-                const waMessage = encodeURIComponent(`مرحباً شركة كنارة، أود الاستفسار عن القطعة التالية:\nالاسم: ${product.name}\nرقم القطعة: ${product.partNumber}\nالسعر المعلن: ${product.price ? product.price + ' ريال' : 'غير محدد'}`);
+                const waMessage = encodeURIComponent(`مرحباً شركة كنارة، أود الاستفسار عن القطعة التالية:\nالاسم: ${product.name}\nرقم القطعة: ${product.partNumber}\nالسعر المعلن: ${product.price ? product.price + ' ريال' : 'غير محدد'}${product.description ? '\nالوصف: ' + product.description : ''}`);
                 const waUrl = `https://wa.me/${waNumber}?text=${waMessage}`;
 
                 card.innerHTML = `
@@ -584,10 +589,16 @@
                                 <span class="text-xs text-gray-500">رقم القطعة:</span>
                                 <span class="font-mono bg-gray-100 px-2.5 py-1 rounded text-base text-gray-800 font-bold" dir="ltr">${product.partNumber}</span>
                             </div>
-                            <div class="flex justify-between items-center mt-2 pt-2 border-t border-gray-100 mb-4">
+                            <div class="flex justify-between items-center mt-2 pt-2 border-t border-gray-100 mb-2">
                                 <span class="text-xs text-gray-500">السعر:</span>
                                 <span class="text-lg font-extrabold text-canara-dark"><span dir="ltr">${formattedPrice}</span> <span class="text-xs font-normal text-gray-500">ر.س</span></span>
                             </div>
+                            ${product.description ? `
+                            <div class="mt-2 pt-2 border-t border-gray-100 text-xs text-gray-600 leading-relaxed bg-gray-50 p-2.5 rounded-lg mb-4">
+                                <span class="font-bold text-gray-700 block mb-1"><i class="fa-solid fa-align-right text-canara-yellow ml-1"></i> وصف القطعة:</span>
+                                <span>${product.description}</span>
+                            </div>
+                            ` : '<div class="mb-4"></div>'}
                         </div>
                         <a href="${waUrl}" target="_blank" class="w-full bg-[#25D366] hover:bg-[#128C7E] text-white font-bold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
                             <i class="fa-brands fa-whatsapp text-xl"></i>
@@ -606,7 +617,8 @@
                 const matchName = (p.name || '').toLowerCase().includes(query);
                 const matchNumber = (p.partNumber || '').toLowerCase().includes(query);
                 const matchType = (p.type || '').toLowerCase().includes(query);
-                return !query || (matchName || matchNumber || matchType);
+                const matchDesc = (p.description || '').toLowerCase().includes(query);
+                return !query || (matchName || matchNumber || matchType || matchDesc);
             });
 
             renderUserGrid(filtered);
@@ -740,6 +752,7 @@
                         type: p.type || '',
                         number: p.partNumber || p.part_number || '',
                         price: p.price || 0,
+                        description: p.description || '',
                         imageUrl: p.imageUrl || p.image_url || ''
                     });
                     successCount++;
@@ -830,6 +843,7 @@ CREATE TABLE IF NOT EXISTS public.products (
     part_number TEXT,
     partnumber TEXT,
     price NUMERIC,
+    description TEXT,
     image_url TEXT,
     imageurl TEXT
 );
@@ -839,6 +853,7 @@ ALTER TABLE public.products ADD COLUMN IF NOT EXISTS type TEXT;
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS part_number TEXT;
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS partnumber TEXT;
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS price NUMERIC;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS description TEXT;
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS image_url TEXT;
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS imageurl TEXT;
 
@@ -915,6 +930,7 @@ CREATE POLICY "Public Delete Access" ON public.products FOR DELETE USING (true);
             document.getElementById('new-type').value = product.type || '';
             document.getElementById('new-number').value = product.partNumber;
             document.getElementById('new-price').value = product.price || '';
+            document.getElementById('new-description').value = product.description || '';
             document.getElementById('new-image').value = product.imageUrl;
             updateImagePreview();
             updateBrandPreview();
@@ -929,6 +945,7 @@ CREATE POLICY "Public Delete Access" ON public.products FOR DELETE USING (true);
             document.getElementById('add-product-form').reset();
             const fileInput = document.getElementById('image-file-input');
             if (fileInput) fileInput.value = '';
+            document.getElementById('new-description').value = '';
             updateImagePreview();
             updateBrandPreview();
             document.getElementById('form-title').textContent = 'إضافة منتج جديد';
@@ -1016,6 +1033,7 @@ CREATE POLICY "Public Delete Access" ON public.products FOR DELETE USING (true);
         type: payloadRaw.type,
         part_number: payloadRaw.number,
         price: Number(payloadRaw.price) || 0,
+        description: payloadRaw.description || '',
         image_url: payloadRaw.imageUrl
     };
 
@@ -1048,6 +1066,7 @@ CREATE POLICY "Public Delete Access" ON public.products FOR DELETE USING (true);
             const rawType = document.getElementById('new-type').value.trim();
             const number = document.getElementById('new-number').value.trim();
             const price = document.getElementById('new-price').value.trim();
+            const description = document.getElementById('new-description').value.trim();
             const rawImageUrl = document.getElementById('new-image').value.trim();
 
             if (!name || !rawType || !number || !price || !rawImageUrl) {
@@ -1076,7 +1095,7 @@ CREATE POLICY "Public Delete Access" ON public.products FOR DELETE USING (true);
 
             try {
                 if (supabaseClient) {
-                    await saveToSupabase({ name, type, number, price: Number(price), imageUrl }, editingProductId);
+                    await saveToSupabase({ name, type, number, price: Number(price), description, imageUrl }, editingProductId);
                     showToast(editingProductId ? 'تم التعديل في Supabase بنجاح' : 'تم إضافة المنتج في Supabase بنجاح');
                     await loadProducts();
                     cancelEdit();
@@ -1084,12 +1103,12 @@ CREATE POLICY "Public Delete Access" ON public.products FOR DELETE USING (true);
                     if (editingProductId) {
                         const index = products.findIndex(p => String(p.id) === String(editingProductId));
                         if (index !== -1) {
-                            products[index] = { ...products[index], name, type, partNumber: number, price: Number(price), imageUrl };
+                            products[index] = { ...products[index], name, type, partNumber: number, price: Number(price), description, imageUrl };
                             saveLocalProducts();
                             showToast('تم تعديل بيانات المنتج محلياً');
                         }
                     } else {
-                        const newProduct = { id: Date.now().toString(), name, type, partNumber: number, price: Number(price), imageUrl };
+                        const newProduct = { id: Date.now().toString(), name, type, partNumber: number, price: Number(price), description, imageUrl };
                         products.push(newProduct);
                         saveLocalProducts();
                         showToast('تمت إضافة المنتج محلياً');
