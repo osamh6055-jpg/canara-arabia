@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شركة كنارة العربية - دليل قطع الغيار</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="https://i.postimg.cc/prcB96RP/efa50bdf-396f-46d0-a13f-4938e45656a4.png">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Supabase JS Client v2 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        canara: {
+                            yellow: '#FFC000',
+                            dark: '#111111',
+                            gray: '#2A2A2A',
+                            light: '#F5F5F5'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Tajawal', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: #F5F5F5;
+        }
+        
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #111111;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #FFC000;
+            border-radius: 4px;
+        }
+
+        .hero-pattern {
+            background-color: #111111;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%232a2a2a' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            border-bottom: 4px solid #FFC000;
+        }
+
+        @keyframes slideInUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .toast-enter {
+            animation: slideInUp 0.3s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="text-gray-800 antialiased min-h-screen flex flex-col">
+
+    <header class="bg-canara-dark text-white shadow-md relative z-20 border-b-4 border-canara-yellow">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-4 cursor-pointer" onclick="showUserView()">
+                <img src="https://i.postimg.cc/prcB96RP/efa50bdf-396f-46d0-a13f-4938e45656a4.png" alt="شعار شركة كنارة العربية" class="h-12 w-auto object-contain rounded-lg">
+                <div>
+                    <h1 class="text-xl font-bold tracking-wider">شركة كنارة العربية</h1>
+                    <p class="text-xs text-canara-yellow uppercase tracking-widest">Canara Arabia Company</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container" class="fixed bottom-5 left-1/2 transform -translate-x-1/2 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow flex flex-col">
+        
+        <!-- USER VIEW -->
+        <div id="user-view" class="flex-grow flex flex-col">
+            <!-- Hero Search Section -->
+            <section class="hero-pattern py-16 px-4 relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-b from-transparent to-canara-dark opacity-90"></div>
+                <div class="container mx-auto relative z-10 max-w-3xl text-center">
+                    <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">قطع الغيار بأسعار التكلفة</h2>
+                    <p class="text-gray-400 mb-8 text-lg">نوفر لك أفضل قطع غيار المعدات الثقيلة بأعلى معايير الجودة والموثوقية.</p>
+                    
+                    <div class="bg-white p-3 md:p-4 rounded-xl shadow-lg flex flex-col md:flex-row gap-3">
+                        <div class="flex-1 relative">
+                            <span class="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 text-lg">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </span>
+                            <input type="text" id="search-input" class="w-full pr-11 pl-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-canara-yellow text-base text-gray-800 placeholder-gray-400" placeholder="ابحث باسم القطعة، البراند، أو رقم القطعة..." oninput="handleSearch()">
+                        </div>
+                        <button onclick="handleSearch()" class="bg-canara-dark text-canara-yellow font-bold py-3 px-8 rounded-lg hover:bg-gray-800 transition-colors whitespace-nowrap flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-search"></i>
+                            <span>بحث</span>
+                        </button>
+                    </div>
+
+                    <p class="text-xs md:text-sm text-gray-300 mt-3 flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-circle-info text-canara-yellow"></i>
+                        <span>ملاحظة: الأسعار لا تشمل الضريبة</span>
+                    </p>
+                </div>
+            </section>
+
+            <!-- Product Grid Section -->
+            <section class="py-12 px-4 container mx-auto flex-grow">
+                <div class="flex justify-between items-center mb-6 border-b border-gray-200 pb-4">
+                    <div class="flex items-center gap-3">
+                        <h3 class="text-2xl font-bold text-canara-dark border-r-4 border-canara-yellow pr-3">المنتجات المتوفرة</h3>
+                        <span id="supabase-status-badge" class="hidden text-xs px-2.5 py-1 rounded-full font-medium bg-gray-200 text-gray-600 flex items-center gap-1">
+                            <i class="fa-solid fa-database text-[10px]"></i> <span id="db-source-text">تخزين محلي</span>
+                        </span>
+                    </div>
+                    <span id="results-count" class="bg-gray-200 text-gray-700 py-1 px-3 rounded-full text-sm font-medium"></span>
+                </div>
+                
+                <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Products injected via JS -->
+                </div>
+                
+                <div id="empty-state" class="hidden flex-col items-center justify-center py-16 text-gray-500">
+                    <i class="fa-solid fa-box-open text-6xl mb-4 text-gray-300"></i>
+                    <p class="text-xl font-medium">لم يتم العثور على منتجات مطابقة للبحث.</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer Section -->
+    <footer class="bg-canara-dark text-gray-400 py-8 border-t border-gray-800">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <img src="https://i.postimg.cc/prcB96RP/efa50bdf-396f-46d0-a13f-4938e45656a4.png" alt="شعار الشركة" class="h-8 w-auto object-contain">
+                <span class="text-sm">© 2026 شركة كنارة العربية. جميع الحقوق محفوظة.</span>
+            </div>
+            <div class="flex gap-4 text-sm">
+                <span><i class="fa-solid fa-phone mr-1 text-canara-yellow"></i> 011 446 9427</span>
+                <span><i class="fa-solid fa-envelope mr-1 text-canara-yellow"></i> info@canara.com.sa</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Public site JavaScript -->
+    <script>
+        var products = [];
+        var supabaseClient = null;
+
+        const defaultProducts = [
+            { id: '1', name: 'مضخة هيدروليكية رئيسية', type: 'https://placehold.co/120x40/111111/FFC000?text=ITR', partNumber: 'CA-98765', price: 3500, description: 'مضخة ذات جودة عالية متوافقة مع كافة المعدات الثقيلة.', imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Hydraulic+Pump' },
+            { id: '2', name: 'فلتر زيت محرك', type: 'https://placehold.co/120x40/111111/FFC000?text=CAT', partNumber: '1R-1808', price: 180, description: '', imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Oil+Filter' },
+            { id: '3', name: 'جنزير حفارة كامل', type: 'https://placehold.co/120x40/111111/FFC000?text=ITR', partNumber: 'TRK-452', price: 4200, description: '', imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Track+Chain' },
+            { id: '4', name: 'طقم ربلات (Seal Kit)', type: 'https://placehold.co/120x40/111111/FFC000?text=FP', partNumber: 'SK-2099', price: 450, description: '', imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Seal+Kit' },
+            { id: '5', name: 'ترس دوران (Swing Gear)', type: 'https://placehold.co/120x40/111111/FFC000?text=CTP', partNumber: 'SG-112', price: 2800, description: '', imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Swing+Gear' },
+            { id: '6', name: 'مسمار وجلبة بوكت', type: 'https://placehold.co/120x40/111111/FFC000?text=Komatsu', partNumber: 'PB-009', price: 220, description: '', imageUrl: 'https://placehold.co/400x300/1A1A1A/FFC000?text=Pin+%26+Bushing' }
+        ];
+
+        const PUBLIC_SUPABASE_URL = 'https://knvfuhmvqzmjdwllawnm.supabase.co/rest/v1/';
+        const PUBLIC_SUPABASE_KEY = 'sb_publishable_zRTn_z2DdtnrI_mm4hjXeg_FX-hk0Rf';
+
+        var SUPABASE_URL = PUBLIC_SUPABASE_URL;
+        var SUPABASE_KEY = PUBLIC_SUPABASE_KEY;
+
+        const productGrid = document.getElementById('product-grid');
+        const emptyState = document.getElementById('empty-state');
+        const resultsCount = document.getElementById('results-count');
+        const searchInput = document.getElementById('search-input');
+
+        function sanitizeUrl(rawUrl) {
+            if (!rawUrl) return '';
+            let cleaned = rawUrl.trim();
+            if (!cleaned.startsWith('http://') && !cleaned.startsWith('https://')) cleaned = 'https://' + cleaned;
+            try { return new URL(cleaned).origin; }
+            catch (e) { return cleaned.replace(/\/rest\/v1\/?$/i, '').replace(/\/+$/, ''); }
+        }
+
+        function initSupabase() {
+            const cleanUrl = sanitizeUrl(SUPABASE_URL);
+            if (window.supabase && cleanUrl && SUPABASE_KEY) {
+                try {
+                    supabaseClient = window.supabase.createClient(cleanUrl, SUPABASE_KEY.trim());
+                    return true;
+                } catch (e) { console.error(e); }
+            }
+            return false;
+        }
+
+        async function loadProducts() {
+            if (initSupabase()) {
+                try {
+                    const { data, error } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
+                    if (!error && data) {
+                        products = data.map(item => ({
+                            id: item.id ? String(item.id) : (item.partNumber || item.partnumber || item.part_number || Date.now().toString()),
+                            name: item.name || item.title || 'بدون اسم',
+                            type: item.type || item.brand || '',
+                            partNumber: item.partNumber || item.partnumber || item.part_number || '',
+                            price: item.price !== undefined && item.price !== null ? item.price : 0,
+                            description: item.description || item.desc || '',
+                            imageUrl: item.imageUrl || item.imageurl || item.image_url || ''
+                        }));
+                        renderUserGrid();
+                        return;
+                    }
+                } catch (err) { console.error(err); }
+            }
+            const localData = localStorage.getItem('canara_products');
+            if (localData) {
+                try { products = JSON.parse(localData); }
+                catch (e) { products = defaultProducts; }
+            } else {
+                products = defaultProducts;
+                localStorage.setItem('canara_products', JSON.stringify(products));
+            }
+            renderUserGrid();
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function renderUserGrid(dataToRender = products) {
+            productGrid.innerHTML = '';
+            if (!dataToRender || dataToRender.length === 0) {
+                productGrid.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+                resultsCount.textContent = '0 منتج';
+                return;
+            }
+            productGrid.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            emptyState.classList.remove('flex');
+            resultsCount.textContent = `${dataToRender.length} منتجات`;
+
+            dataToRender.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 card-hover flex flex-col h-full';
+                const productBrand = product.type || '';
+                const formattedPrice = product.price ? Number(product.price).toLocaleString('en-US') : 'حسب الطلب';
+                const waNumber = "966567618315";
+                const waMessage = encodeURIComponent(`مرحباً شركة كنارة، أود الاستفسار عن القطعة التالية:\nالاسم: ${product.name}\nرقم القطعة: ${product.partNumber}\nالسعر المعلن: ${product.price ? product.price + ' ريال' : 'غير محدد'}${product.description ? '\nالوصف: ' + product.description : ''}`);
+                const waUrl = `https://wa.me/${waNumber}?text=${waMessage}`;
+                card.innerHTML = `
+                  <div class="w-full h-52 bg-white relative flex items-center justify-center p-4 overflow-hidden">
+                    <img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.name)}" class="w-full h-full object-contain transition-transform duration-500 hover:scale-105" onerror="this.src='https://placeholder.co/400x300/1A1A1A/FFC000?text=No+Image'">
+                  </div>
+                  <div class="p-4 flex-grow flex flex-col justify-between">
+                    <div>
+                      <h4 class="font-bold text-gray-800 text-lg mt-6 mb-2 leading-tight">${escapeHtml(product.name)}</h4>
+                      <div class="bg-amber-50/80 border border-amber-200/80 rounded-lg p-2.5 mb-3 flex items-center justify-between">
+                        <span class="text-xs text-gray-600 font-bold">البراند / الماركة:</span>
+                        <div class="h-11 px-3 py-1 bg-white border border-amber-200 rounded-lg flex items-center justify-center shadow-sm min-w-[140px]">
+                          <img src="${escapeHtml(productBrand)}" alt="الماركة" class="h-8 max-w-[130px] object-contain" onerror="this.style.display='none'">
+                        </div>
+                      </div>
+                      <div class="flex justify-between items-center mt-2 pt-2 border-t border-gray-100">
+                        <span class="text-xs text-gray-500">رقم القطعة:</span>
+                        <span class="font-mono bg-gray-100 px-2.5 py-1 rounded text-base text-gray-800 font-bold" dir="ltr">${escapeHtml(product.partNumber)}</span>
+                      </div>
+                      <div class="flex justify-between items-center mt-2 pt-2 border-t border-gray-100 mb-2">
+                        <span class="text-xs text-gray-500">السعر:</span>
+                        <span class="text-lg font-extrabold text-canara-dark"><span dir="ltr">${formattedPrice}</span> <span class="text-xs font-normal text-gray-500">ر.س</span></span>
+                      </div>
+                      ${product.description ? `<div class="mt-2 pt-2 border-t border-gray-100 text-xs text-gray-600 leading-relaxed bg-gray-50 p-2.5 rounded-lg mb-4"><span class="font-bold text-gray-700 block mb-1"><i class="fa-solid fa-align-right text-canara-yellow ml-1"></i> وصف القطعة:</span><div class="whitespace-pre-line text-gray-600 leading-normal">${product.description}</div></div>` : '<div class="mb-4"></div>'}
+                    </div>
+                    <a href="${waUrl}" target="_blank" class="w-full bg-[#25D366] hover:bg-[#128C7E] text-white font-bold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors"><i class="fa-brands fa-whatsapp text-xl"></i><span>استفسار عبر واتساب</span></a>
+                  </div>`;
+                productGrid.appendChild(card);
+            });
+        }
+
+        function handleSearch() {
+            const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+            renderUserGrid(products.filter(p =>
+                !query ||
+                (p.name || '').toLowerCase().includes(query) ||
+                (p.partNumber || '').toLowerCase().includes(query) ||
+                (p.type || '').toLowerCase().includes(query) ||
+                (p.description || '').toLowerCase().includes(query)
+            ));
+        }
+
+        window.onload = loadProducts;
+    </script>
+</body>
+</html>
