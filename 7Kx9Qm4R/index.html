@@ -474,6 +474,9 @@
         }
 
         function renderUserGrid(dataToRender = products) {
+            // The admin page is intentionally separate from the public product grid.
+            // If this element is absent, simply skip public-grid rendering.
+            if (!productGrid) return;
             productGrid.innerHTML = '';
             
             if (!dataToRender || dataToRender.length === 0) {
