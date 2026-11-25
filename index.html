@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="ar" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>مطابقة ORDER و BACK ORDER</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js"></script>
+<style>
+:root{font-family:Tahoma,Arial,sans-serif;color:#182230;background:#f4f7f6}
+*{box-sizing:border-box}body{margin:0;padding:28px;direction:ltr;text-align:left}
+.wrap{max-width:1100px;margin:auto}.top{margin-bottom:22px}
+h1{font-size:26px;margin:0 0 8px}.sub{color:#637083;line-height:1.8;text-align:left;direction:ltr}
+.panel{background:#fff;border:1px solid #e1e8e5;border-radius:16px;padding:22px;margin:16px 0;box-shadow:0 5px 20px #162b1b08}
+.drop{border:2px dashed #a9c7b6;background:#f7fbf8;border-radius:13px;padding:30px;text-align:center}
+.drop strong{display:block;font-size:18px;margin-bottom:8px}.drop p{color:#6c7887;margin:7px 0 16px}
+input[type=file]{display:none}.btn{display:inline-block;border:0;border-radius:9px;padding:11px 18px;background:#176b46;color:#fff;font-weight:700;cursor:pointer}
+.btn:disabled{opacity:.45;cursor:not-allowed}.secondary{background:#eaf2ed;color:#176b46}
+.file{margin-top:12px;color:#176b46;font-weight:700;word-break:break-word}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px}
+.stat{background:#f7faf8;border:1px solid #e7eeea;border-radius:11px;padding:14px}
+.stat small{display:block;color:#687789;margin-bottom:7px}.stat b{font-size:23px}
+.note{direction:rtl;text-align:right;background:#fff9e9;border:1px solid #f0dfad;border-radius:10px;padding:12px;color:#755c1c;line-height:1.8;margin-top:15px}
+.status{margin-top:12px;color:#176b46;font-weight:700;text-align:left}.tablewrap{overflow:auto;max-height:430px;border:1px solid #e4e9e6;border-radius:10px}\n.group-divider{border-left:4px solid #176b46 !important;background:#f2f8f4 !important}\n.group-divider-cell{border-left:4px solid #176b46 !important;background:#f8fbf9}
+table{border-collapse:collapse;min-width:100%;font-size:12px;white-space:nowrap}
+th,td{padding:9px 11px;border-bottom:1px solid #e9eeeb;text-align:left;direction:ltr;unicode-bidi:plaintext}
+th{background:#eef5f0;position:sticky;top:0;z-index:1}
+tr:last-child td{border-bottom:0}.muted{color:#778394}.hidden{display:none}
+footer{font-size:12px;color:#7b8793;margin:18px 2px;line-height:1.8;direction:rtl;text-align:right}
+@media(max-width:700px){body{padding:14px}.stats{grid-template-columns:repeat(2,1fr)}h1{font-size:21px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+ <div class="top">
+  <h1>مطابقة ORDER مع BACK ORDER</h1>
+  <div class="sub">ارفع ملف Excel، وسيطابق البرنامج أرقام القطع ويضع بيانات BACK ORDER بجانب بيانات ORDER، دون جمع الأرقام أو الكميات أو حذف التكرارات.</div>
+ </div>
+ <section class="panel">
+  <div class="drop" id="drop">
+   <strong>اختر ملف Excel أو اسحبه إلى هنا</strong>
+   <p>يدعم ملفات .xlsx و .xls — يجب أن يحتوي الملف على صفحتي ORDER و BACK ORDER</p>
+   <label class="btn" for="file">اختيار ملف Excel</label>
+   <input id="file" type="file" accept=".xlsx,.xls">
+   <div class="file" id="filename"></div>
+  </div>
+  <div class="note">طريقة المطابقة: كل سطر من ORDER يقابل سطراً واحداً من BACK ORDER يحمل رقم القطعة نفسه. إذا تكرر الرقم، تتم المطابقة بالتتابع دون دمج السطور. وأي سطر من BACK ORDER لا يجد مقابلاً يوضع في نهاية النتيجة.</div>
+  <div id="status" class="status"></div>
+ </section>
+ <section id="results" class="panel hidden">
+  <h2 style="font-size:19px;margin:0 0 14px">نتيجة قراءة الملف</h2>
+  <div class="stats">
+   <div class="stat"><small>صفوف ORDER المقروءة</small><b id="orderCount">0</b></div>
+   <div class="stat"><small>صفوف BACK ORDER المقروءة</small><b id="backCount">0</b></div>
+   <div class="stat"><small>مطابقات تمت</small><b id="matchCount">0</b></div>
+   <div class="stat"><small>BACK ORDER غير مطابق</small><b id="unmatchedCount">0</b></div>
+  </div>
+  <p class="muted" id="summary" style="line-height:1.8"></p>
+  <button id="download" class="btn">تحميل ملف Excel الناتج</button>
+  <h3 style="font-size:16px;margin:22px 0 10px">معاينة جميع السطور</h3>
+  <div class="tablewrap"><table id="preview"></table></div>
+ </section>
+ <footer>ملاحظة: تتم المعالجة داخل المتصفح. لا يتم إرسال ملفك إلى خادم. يلزم اتصال بالإنترنت عند فتح البرنامج لتحميل مكتبة قراءة Excel.</footer>
+</div>
+<script>
+let outputRows=[], outputHeaders=[], orderColumnCount=0, sourceName='matched';
+const $=id=>document.getElementById(id);
+const norm=v=>String(v??'').trim().toUpperCase().replace(/\s+/g,'');
+function findHeader(rows, candidates){
+ for(let i=0;i<Math.min(rows.length,30);i++){
+  const vals=rows[i].map(v=>String(v??'').trim().toUpperCase());
+  if(candidates.every(c=>vals.includes(c))) return i;
+ }
+ return -1;
+}
+function readSheet(ws, kind){
+ const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:''});
+ const headerIndex=kind==='order'
+  ? findHeader(rows,['PART NO'])
+  : findHeader(rows,['ITEM NUMBER']);
+ if(headerIndex<0) throw new Error('لم أجد صف العناوين في صفحة '+(kind==='order'?'ORDER':'BACK ORDER')+'.');
+ const headers=rows[headerIndex].map(v=>String(v??'').trim());
+ const keyIndex=headers.findIndex(v=>v.toUpperCase()===(kind==='order'?'PART NO':'ITEM NUMBER'));
+ const data=[];
+ for(let i=headerIndex+1;i<rows.length;i++){
+  const r=rows[i]||[];
+  if(norm(r[keyIndex])==='') continue;
+  data.push({values:r.slice(0,headers.length),key:norm(r[keyIndex]),sourceRow:i+1});
+ }
+ return {headers,data,headerIndex};
+}
+function makeOutput(order,back){
+ const used=new Set(), backByKey=new Map();
+ back.data.forEach((item,i)=>{
+  if(!backByKey.has(item.key)) backByKey.set(item.key,[]);
+  backByKey.get(item.key).push({...item,index:i});
+ });
+ const headers=[...order.headers,...back.headers.filter((_,i)=>i!==0 || String(back.headers[i]??'').trim()!=='')];
+ const backColumnIndexes=back.headers.map((h,i)=>i).filter(i=>i!==0 || String(back.headers[i]??'').trim()!=='');
+ const rows=[];let matches=0;
+ for(const o of order.data){
+  const candidates=backByKey.get(o.key)||[];
+  const match=candidates.find(x=>!used.has(x.index));
+  const left=Array.from({length:order.headers.length},(_,i)=>o.values[i]??'');
+  if(match){
+   used.add(match.index);matches++;
+   rows.push([...left,...backColumnIndexes.map(i=>match.values[i]??'')]);
+  }else{
+   rows.push([...left,...backColumnIndexes.map(()=> '')]);
+  }
+ }
+ let unmatched=0;
+ back.data.forEach((b,i)=>{
+  if(used.has(i))return;
+  unmatched++;
+  const left=Array.from({length:order.headers.length},()=> '');
+  rows.push([...left,...backColumnIndexes.map(j=>b.values[j]??'')]);
+ });
+ return {headers,rows,matches,unmatched};
+}
+function displayValue(v){
+ if(typeof v==='number' && Number.isFinite(v)){
+  return new Intl.NumberFormat('en-US',{maximumFractionDigits:2,useGrouping:false}).format(v);
+ }
+ return v==null?'':String(v);
+}
+function renderPreview(headers,rows,splitIndex){
+ const table=$('preview');table.innerHTML='';
+ const thead=document.createElement('thead'),tr=document.createElement('tr');
+ headers.forEach((h,i)=>{const th=document.createElement('th');th.textContent=h;if(i===splitIndex)th.classList.add('group-divider');tr.appendChild(th)});
+ thead.appendChild(tr);table.appendChild(thead);
+ const tbody=document.createElement('tbody');
+ rows.forEach(r=>{const tr=document.createElement('tr');r.forEach((v,i)=>{const td=document.createElement('td');td.textContent=displayValue(v);if(i===splitIndex)td.classList.add('group-divider-cell');tr.appendChild(td)});tbody.appendChild(tr)});
+ table.appendChild(tbody);
+}
+function processFile(file){
+ $('status').textContent='جارٍ قراءة الصفحتين ومطابقة أرقام القطع...';
+ $('results').classList.add('hidden');$('filename').textContent=file.name;sourceName=file.name.replace(/\.(xlsx|xls)$/i,'');
+ const reader=new FileReader();
+ reader.onload=e=>{
+  try{
+   const wb=XLSX.read(e.target.result,{type:'array',cellDates:true});
+   const orderName=wb.SheetNames.find(n=>n.trim().toUpperCase()==='ORDER');
+   const backName=wb.SheetNames.find(n=>n.trim().toUpperCase()==='BACK ORDER');
+   if(!orderName||!backName)throw new Error('يجب أن يحتوي الملف على صفحتين باسم ORDER و BACK ORDER.');
+   const order=readSheet(wb.Sheets[orderName],'order');
+   const back=readSheet(wb.Sheets[backName],'back');
+   const result=makeOutput(order,back);
+   outputHeaders=result.headers;outputRows=result.rows;orderColumnCount=order.headers.length;
+   $('orderCount').textContent=order.data.length.toLocaleString('en-US');
+   $('backCount').textContent=back.data.length.toLocaleString('en-US');
+   $('matchCount').textContent=result.matches.toLocaleString('en-US');
+   $('unmatchedCount').textContent=result.unmatched.toLocaleString('en-US');
+   $('summary').textContent=`تمت قراءة ${order.data.length} سطراً من ORDER و${back.data.length} سطراً من BACK ORDER. الناتج يحتوي على ${result.rows.length} سطراً. تم الحفاظ على كل سطر، ولم يتم جمع الكميات أو حذف التكرارات.`;
+   renderPreview(outputHeaders,outputRows,orderColumnCount);
+   document.querySelector('#results h3').textContent='معاينة جميع السطور ('+result.rows.length.toLocaleString('en-US')+' سطراً)';
+   $('results').classList.remove('hidden');
+   $('status').textContent='اكتملت القراءة والمطابقة بنجاح.';
+  }catch(err){$('status').textContent='تعذر إكمال القراءة: '+err.message;}
+ };
+ reader.onerror=()=>{$('status').textContent='حدث خطأ أثناء قراءة الملف.'};
+ reader.readAsArrayBuffer(file);
+}
+$('file').addEventListener('change',e=>{if(e.target.files[0])processFile(e.target.files[0])});
+$('download').addEventListener('click',()=>{
+ if(!outputRows.length)return;
+ const ws=XLSX.utils.aoa_to_sheet([outputHeaders,...outputRows]);
+ const lastRow=outputRows.length;
+ const lastCol=outputHeaders.length-1;
+ const thinBorder={style:'thin',color:{rgb:'D9E2DC'}};
+ // Professional header styling and readable data grid.
+ for(let c=0;c<outputHeaders.length;c++){
+  const addr=XLSX.utils.encode_cell({r:0,c});
+  if(!ws[addr]) continue;
+  ws[addr].s={
+   font:{bold:true,color:{rgb:'FFFFFF'},sz:11},
+   fill:{patternType:'solid',fgColor:{rgb:'176B46'}},
+   alignment:{horizontal:'center',vertical:'center',wrapText:true},
+   border:{top:thinBorder,bottom:{style:'medium',color:{rgb:'0F5132'}},left:thinBorder,right:thinBorder}
+  };
+ }
+ for(let r=1;r<=lastRow;r++){
+  for(let c=0;c<outputHeaders.length;c++){
+   const addr=XLSX.utils.encode_cell({r,c});
+   const cell=ws[addr];
+   if(!cell) continue;
+   cell.s={
+    font:{sz:10,color:{rgb:'24312B'}},
+    fill:r%2===0?{patternType:'solid',fgColor:{rgb:'F3F8F5'}}:{patternType:'solid',fgColor:{rgb:'FFFFFF'}},
+    alignment:{vertical:'center',horizontal:'left'},
+    border:{top:thinBorder,bottom:thinBorder,left:thinBorder,right:thinBorder}
+   };
+   if(cell.t==='n') cell.z='0.##';
+  }
+ }
+ ws['!cols']=outputHeaders.map((h,i)=>({
+  wch:Math.max(12,Math.min(30,String(h||'').length+4))
+ }));
+ ws['!rows']=[{hpt:30},...outputRows.map(()=>({hpt:21}))];
+ ws['!autofilter']={ref:XLSX.utils.encode_range({s:{r:0,c:0},e:{r:lastRow,c:lastCol}})};
+ ws['!freeze']={xSplit:0,ySplit:1,topLeftCell:'A2',activePane:'bottomLeft',state:'frozen'};
+ const wb=XLSX.utils.book_new();
+ XLSX.utils.book_append_sheet(wb,ws,'ORDER MATCHED');
+ XLSX.writeFile(wb,sourceName+'_ORDER_MATCHED.xlsx');
+});
+const drop=$('drop');
+['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.style.borderColor='#176b46'}));
+['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.style.borderColor='#a9c7b6'}));
+drop.addEventListener('drop',e=>{const f=e.dataTransfer.files[0];if(f)processFile(f)});
+</script>
+</body></html>
